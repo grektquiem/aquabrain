@@ -1,0 +1,20 @@
+{
+  "name": "@aquabrain/simulator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulador del gateway ESP32-S3: genera mediciones realistas, las valida con el contrato compartido y las envía a la API (RF06, RF14, HU10).",
+  "main": "dist/simulador.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/simulador.js",
+    "dev": "npm run build && node dist/simulador.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@aquabrain/shared": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "typescript": "^5.6.3"
+  }
+}
