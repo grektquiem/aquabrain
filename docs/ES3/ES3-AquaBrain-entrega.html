@@ -141,7 +141,7 @@
 <ul>
 <li class="lvl2"><a href="#sec66">9.1 Resumen de la ejecución</a></li>
 <li class="lvl2"><a href="#sec67">9.2 Pruebas unitarias (8 suites / 50 casos)</a></li>
-<li class="lvl2"><a href="#sec68">9.3 Pruebas de integración (9 suites / 73 casos)</a></li>
+<li class="lvl2"><a href="#sec68">9.3 Pruebas de integración (9 suites / 75 casos)</a></li>
 <li class="lvl2"><a href="#sec69">9.4 Cobertura de código (TS-44)</a></li>
 <li class="lvl2"><a href="#sec70">9.5 Pruebas de rendimiento (TS-43)</a></li>
 <li class="lvl2"><a href="#sec71">9.6 Pruebas funcionales del simulador</a></li>
@@ -259,6 +259,7 @@
 <li><strong>Base de datos PostgreSQL 16</strong> con 19 modelos, migrada con Prisma y sembrada con 30 días de datos; <strong>más de 50 000 mediciones</strong> e índices que sostienen consultas en milisegundos.</li>
 <li><strong>Dashboard React</strong> con panel en vivo, históricos con gráficos y exportación CSV, y bandeja de alertas con resolución; verificado en navegador real.</li>
 <li><strong>Simulador del gateway</strong> con modos <em>online</em>, <em>offline</em> (idempotencia) y <em>anomalía</em>.</li>
+<li><strong>Ingesta por lote optimizada</strong> (R-01): inserción masiva y evaluación de reglas por lote; un lote de 500 lecturas baja de <strong>16,4 s a ~1,4 s</strong>.</li>
 <li><strong>Docker Compose + CI</strong>; imagen de la API construida y verificada.</li>
 </ul>
 <p><strong>Resultados medidos:</strong></p>
@@ -272,23 +273,28 @@
 </thead>
 <tbody><tr>
 <td>Pruebas automatizadas</td>
-<td><strong>123 en verde</strong> (50 unitarias + 73 integración)</td>
+<td><strong>125 en verde</strong> (50 unitarias + 75 integración)</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Cobertura de líneas</td>
-<td><strong>91,96 %</strong></td>
+<td><strong>92,26 %</strong></td>
 <td>≥ 70 %</td>
 </tr>
 <tr>
 <td>Panel (p50)</td>
-<td><strong>200,7 ms</strong></td>
+<td><strong>104,1 ms</strong></td>
 <td>&lt; 2 000 ms</td>
 </tr>
 <tr>
-<td>Históricos 1 mes sobre 50 730 filas (p50)</td>
-<td><strong>397,4 ms</strong></td>
+<td>Históricos 1 mes sobre 52 230 filas (p50)</td>
+<td><strong>573,7 ms</strong></td>
 <td>&lt; 5 000 ms</td>
+</tr>
+<tr>
+<td>Ingesta por lote de 500 lecturas (mediana)</td>
+<td><strong>1 403 ms</strong></td>
+<td>—</td>
 </tr>
 <tr>
 <td>Imagen Docker de la API</td>
@@ -356,7 +362,7 @@
 <tr>
 <td>Pruebas</td>
 <td>Plan TS-01…TS-44</td>
-<td><strong>123 pruebas ejecutadas</strong> (50 unitarias + 73 de integración)</td>
+<td><strong>125 pruebas ejecutadas</strong> (50 unitarias + 75 de integración)</td>
 </tr>
 <tr>
 <td>Despliegue</td>
@@ -374,8 +380,8 @@
 <li><strong>Base de datos:</strong> 19 modelos relacionales en PostgreSQL 16; 20 tablas; la tabla de mediciones supera las <strong>50 000 filas</strong> con índices que mantienen las consultas en el orden de los milisegundos.</li>
 <li><strong>Frontend:</strong> dashboard con panel en vivo, series históricas con gráficos y exportación CSV, y bandeja de alertas con resolución; verificado en un navegador real contra la API en ejecución.</li>
 <li><strong>Simulador:</strong> reproduce los modos <em>online</em>, <em>offline</em> (con sincronización diferida e idempotencia) y <em>anomalía</em> (valores fuera de rango).</li>
-<li><strong>Pruebas:</strong> <strong>123 pruebas en verde</strong>; cobertura combinada por encima del umbral del 70 % en líneas y sentencias.</li>
-<li><strong>Rendimiento (TS-43):</strong> panel &lt; 0,4 s y serie de un mes sobre 50 730 filas &lt; 0,7 s (p95), muy por debajo de las metas de 2 s y 5 s.</li>
+<li><strong>Pruebas:</strong> <strong>125 pruebas en verde</strong>; cobertura combinada por encima del umbral del 70 % en líneas y sentencias.</li>
+<li><strong>Rendimiento (TS-43):</strong> panel &lt; 0,4 s y serie de un mes sobre 52 230 filas &lt; 0,8 s (p95), muy por debajo de las metas de 2 s y 5 s. El lote de 500 lecturas bajó de 16,4 s a ~1,4 s tras la optimización R-01.</li>
 </ul>
 <h2 id="sec9">1.5 Estructura del documento</h2>
 <p>El informe sigue las 16 secciones del borrador de la Unidad 3: introducción; repositorio y entorno; backend; frontend; simulador; base de datos; seguridad; despliegue; ejecución del plan de pruebas; resultados frente a lo esperado; análisis de discrepancias; recomendaciones; trazabilidad; conclusiones; bibliografía y anexos.</p>
@@ -435,7 +441,10 @@
 </tbody></table>
 <h2 id="sec12">2.2 Control de versiones</h2>
 <p>El repositorio se inicializó con <strong>git</strong> (rama <code>main</code>) y un historial de incrementos reales. Los commits siguen <em>Conventional Commits</em> y agrupan unidades coherentes de trabajo (se listan sus mensajes):</p>
-<pre><code class="language-text">docs(es3): informe de implementacion con evidencia real
+<pre><code class="language-text">docs(es3): informe actualizado con la optimizacion R-01
+test(api): idempotencia intra-lote y alertas del lote
+perf(api): ingesta por lote masiva y reglas por lote (R-01)
+docs(es3): informe de implementacion con evidencia real
 docs(es1,es2): catalogo corregido y diseno de la solucion
 ci(infra): pipeline de GitHub Actions y despliegue con Docker
 feat(web): dashboard React con panel, historicos y alertas
@@ -446,7 +455,7 @@ feat(shared): esquemas Zod como fuente unica del contrato
 chore: configuracion inicial del monorepo con npm workspaces
 </code></pre>
 <blockquote>
-<p><strong>Nota honesta.</strong> El historial se creó al final del desarrollo (9 commits agrupando el trabajo ya realizado), no como una secuencia diaria de <em>commits</em>. No existe repositorio remoto ni <em>pull requests</em>: el control de versiones es <strong>local</strong>. Esta desviación respecto del flujo colaborativo descrito en ES2 se registra en la sección 11.</p>
+<p><strong>Nota honesta.</strong> El historial se creó al final del desarrollo (12 commits agrupando el trabajo ya realizado), no como una secuencia diaria de <em>commits</em>. No existe repositorio remoto ni <em>pull requests</em>: el control de versiones es <strong>local</strong>. Esta desviación respecto del flujo colaborativo descrito en ES2 se registra en la sección 11.</p>
 </blockquote>
 <p>Se protegen deliberadamente los secretos: <code>.gitignore</code> excluye <code>.env</code>, <code>.env.*</code> (salvo <code>.env.example</code>), <code>infra/.env</code>, y todas las carpetas <code>node_modules/</code>, <code>dist/</code> y <code>coverage/</code>. La verificación previa al primer <em>commit</em> confirmó que <strong>no se versiona ninguna clave real</strong> (las claves de dispositivo y los secretos JWT solo existen en el entorno local).</p>
 <h2 id="sec13">2.3 Entorno de desarrollo utilizado</h2>
@@ -950,22 +959,22 @@ ReglaAlerta · Alerta · Evento
 </thead>
 <tbody><tr>
 <td><code>medicion</code></td>
-<td align="right"><strong>50 730</strong></td>
+<td align="right"><strong>52 230</strong></td>
 <td>Ver composición abajo</td>
 </tr>
 <tr>
 <td><code>auditoria</code></td>
-<td align="right">662</td>
+<td align="right">877</td>
 <td>Generadas por las pruebas y el uso</td>
 </tr>
 <tr>
 <td><code>medicion_idempotencia</code></td>
-<td align="right">530</td>
+<td align="right">2 030</td>
 <td>Claves de idempotencia registradas</td>
 </tr>
 <tr>
 <td><code>refresh_token</code></td>
-<td align="right">86</td>
+<td align="right">110</td>
 <td>Sesiones emitidas/revocadas</td>
 </tr>
 <tr>
@@ -1023,7 +1032,7 @@ ReglaAlerta · Alerta · Evento
 <p>Las filas de <code>sistema</code>, <code>dispositivo</code> y <code>sensor</code> corresponden a la <strong>semilla</strong>; los <em>tenants</em> temporales que crean las pruebas de integración se eliminan al terminar cada suite (RP-03, aislamiento entre pruebas), por lo que no quedan residuos.</p>
 </blockquote>
 <h2 id="sec46">6.3 Composición de la tabla de mediciones</h2>
-<p>El total de <strong>50 730</strong> mediciones se descompone así:</p>
+<p>El total de <strong>52 230</strong> mediciones se descompone así:</p>
 <table>
 <thead>
 <tr>
@@ -1040,8 +1049,8 @@ ReglaAlerta · Alerta · Evento
 <td align="right">7 000</td>
 </tr>
 <tr>
-<td>Lote de rendimiento (500 lecturas por la API)</td>
-<td align="right">500</td>
+<td>Lotes de rendimiento de escritura (4 × 500 lecturas por la API)</td>
+<td align="right">2 000</td>
 </tr>
 <tr>
 <td>Ingesta del simulador (modos online/offline/anomalía)</td>
@@ -1049,7 +1058,7 @@ ReglaAlerta · Alerta · Evento
 </tr>
 <tr>
 <td><strong>Total</strong></td>
-<td align="right"><strong>50 730</strong></td>
+<td align="right"><strong>52 230</strong></td>
 </tr>
 </tbody></table>
 <p>Se verificó que la <strong>calidad</strong> y el <strong>origen</strong> se registran correctamente:</p>
@@ -1074,10 +1083,10 @@ ReglaAlerta · Alerta · Evento
 <tr>
 <td>OFFLINE</td>
 <td>OK</td>
-<td align="right">508</td>
+<td align="right">2 008</td>
 </tr>
 </tbody></table>
-<p>Las <strong>2</strong> mediciones <code>SOSPECHOSA</code> son exactamente los valores fuera de rango inyectados por el simulador en el modo anomalía, lo que confirma que <strong>no se descartan</strong> (TS-07). Las 508 <code>OFFLINE</code> provienen del lote sincronizado del simulador (8) y del lote de rendimiento (500), enviado con <code>origen = OFFLINE</code>.</p>
+<p>Las <strong>2</strong> mediciones <code>SOSPECHOSA</code> son exactamente los valores fuera de rango inyectados por el simulador en el modo anomalía, lo que confirma que <strong>no se descartan</strong> (TS-07). Las 2 008 <code>OFFLINE</code> provienen del lote sincronizado del simulador (8) y de los lotes de rendimiento de escritura (2 000), enviados con <code>origen = OFFLINE</code>.</p>
 <h2 id="sec47">6.4 Índices y rendimiento</h2>
 <p>La tabla <code>medicion</code> tiene clave primaria compuesta <code>(id, timestamp)</code> y tres índices secundarios:</p>
 <pre><code class="language-text">medicion_pkey               UNIQUE btree (id, timestamp)
@@ -1365,15 +1374,15 @@ v20.20.2 500 5.22.0
 <tr>
 <td>Integración (e2e)</td>
 <td align="right">9</td>
-<td align="right"><strong>73</strong></td>
-<td>✅ 73 en verde</td>
+<td align="right"><strong>75</strong></td>
+<td>✅ 75 en verde</td>
 <td>Jest + Supertest</td>
 </tr>
 <tr>
 <td><strong>Total automatizado</strong></td>
 <td align="right"><strong>17</strong></td>
-<td align="right"><strong>123</strong></td>
-<td><strong>✅ 123 en verde</strong></td>
+<td align="right"><strong>125</strong></td>
+<td><strong>✅ 125 en verde</strong></td>
 <td>—</td>
 </tr>
 <tr>
@@ -1442,7 +1451,7 @@ v20.20.2 500 5.22.0
 <td>Utilidades de tiempo (tolerancia de <code>timestamp</code>)</td>
 </tr>
 </tbody></table>
-<h2 id="sec68">9.3 Pruebas de integración (9 suites / 73 casos)</h2>
+<h2 id="sec68">9.3 Pruebas de integración (9 suites / 75 casos)</h2>
 <p>Todas las suites de integración levantan la aplicación con la <strong>misma configuración que <code>main.ts</code></strong> (endurecimiento HTTP, prefijo, pipe y OpenAPI) y utilizan un <strong>tenant propio por suite</strong> (sistema + dispositivo + sensores) que se elimina al terminar, de modo que ninguna prueba depende del estado dejado por otra.</p>
 <table>
 <thead>
@@ -1464,8 +1473,8 @@ v20.20.2 500 5.22.0
 </tr>
 <tr>
 <td><code>mediciones.e2e-spec.ts</code></td>
-<td align="right">10</td>
-<td>Ingesta individual y por lote (207), idempotencia, calidad SOSPECHOSA, validaciones</td>
+<td align="right">12</td>
+<td>Ingesta individual y por lote (207), idempotencia (entre lotes y dentro de un lote), calidad SOSPECHOSA, validaciones y alertas del lote</td>
 </tr>
 <tr>
 <td><code>alertas.e2e-spec.ts</code></td>
@@ -1511,32 +1520,32 @@ v20.20.2 500 5.22.0
 </thead>
 <tbody><tr>
 <td>Líneas</td>
-<td align="right"><strong>91,96 %</strong></td>
+<td align="right"><strong>92,26 %</strong></td>
 <td align="right">70 %</td>
 <td>✅</td>
 </tr>
 <tr>
 <td>Sentencias</td>
-<td align="right"><strong>90,70 %</strong></td>
+<td align="right"><strong>91,09 %</strong></td>
 <td align="right">70 %</td>
 <td>✅</td>
 </tr>
 <tr>
 <td>Funciones</td>
-<td align="right"><strong>88,66 %</strong></td>
+<td align="right"><strong>89,49 %</strong></td>
 <td align="right">60 %</td>
 <td>✅</td>
 </tr>
 <tr>
 <td>Ramas</td>
-<td align="right"><strong>68,95 %</strong></td>
+<td align="right"><strong>69,01 %</strong></td>
 <td align="right">60 %</td>
 <td>✅</td>
 </tr>
 </tbody></table>
 <p>El informe se genera con <code>npm run test:cov</code>, que ejecuta ambas suites, fusiona los resultados y <strong>falla si no se alcanza el umbral</strong> (<code>scripts/coverage-combinado.js</code>). El artefacto combinado (texto, <code>lcov</code>, HTML y <code>json-summary</code>) queda en <code>apps/api/coverage/combinado</code>.</p>
 <h2 id="sec70">9.5 Pruebas de rendimiento (TS-43)</h2>
-<p><strong>Meta:</strong> panel &lt; 2 s; históricos de un mes &lt; 5 s con 50 000 registros. <strong>Volumen real de la tabla:</strong> 50 730 filas.</p>
+<p><strong>Meta:</strong> panel &lt; 2 s; históricos de un mes &lt; 5 s con 50 000 registros. <strong>Volumen real de la tabla:</strong> 52 230 filas.</p>
 <p>Medición sobre 25 repeticiones por endpoint (milisegundos):</p>
 <table>
 <thead>
@@ -1551,30 +1560,30 @@ v20.20.2 500 5.22.0
 </thead>
 <tbody><tr>
 <td><code>GET /dashboard/estado</code></td>
-<td align="right">170,1</td>
-<td align="right"><strong>200,7</strong></td>
-<td align="right">251,4</td>
-<td align="right">332,0</td>
+<td align="right">88,4</td>
+<td align="right"><strong>104,1</strong></td>
+<td align="right">225,9</td>
+<td align="right">328,8</td>
 <td>✅ (&lt; 2000 ms)</td>
 </tr>
 <tr>
 <td><code>GET /mediciones/serie</code> (1 mes, 723 puntos, 77 KB)</td>
-<td align="right">188,5</td>
-<td align="right"><strong>397,4</strong></td>
-<td align="right">614,3</td>
-<td align="right">637,1</td>
+<td align="right">231,5</td>
+<td align="right"><strong>573,7</strong></td>
+<td align="right">633,8</td>
+<td align="right">730,4</td>
 <td>✅ (&lt; 5000 ms)</td>
 </tr>
 <tr>
 <td><code>GET /alertas?porPagina=20</code></td>
-<td align="right">47,6</td>
-<td align="right"><strong>77,8</strong></td>
-<td align="right">109,4</td>
-<td align="right">112,2</td>
+<td align="right">59,2</td>
+<td align="right"><strong>64,8</strong></td>
+<td align="right">86,2</td>
+<td align="right">91,8</td>
 <td>✅</td>
 </tr>
 </tbody></table>
-<p>La consulta de series agregada por hora a nivel de base de datos toma <strong>≈2,2 ms</strong> (<code>EXPLAIN ANALYZE</code>, sección 6). En el camino de escritura, un lote completo de <strong>500 mediciones</strong> por <code>POST /mediciones/bulk</code> (500 aceptadas, 0 rechazadas) tardó <strong>16,4 s</strong>; este resultado, que es el más alto del sistema, se analiza como hallazgo en las secciones 11 y 12.</p>
+<p>La consulta de series agregada por hora a nivel de base de datos toma <strong>≈2,2 ms</strong> (<code>EXPLAIN ANALYZE</code>, sección 6). En el camino de escritura, un lote completo de <strong>500 mediciones</strong> por <code>POST /mediciones/bulk</code> (500 aceptadas, 0 rechazadas) tardó inicialmente <strong>16,4 s</strong>; tras implementar la recomendación <strong>R-01</strong> (inserción masiva <code>createManyAndReturn</code> y evaluación de reglas en un paso por lote) el mismo lote baja a <strong>1 403 ms</strong> de mediana (tres corridas: 1 697 / 1 403 / 1 275 ms), es decir <strong>≈12× más rápido</strong>. El hallazgo H-04 queda resuelto (secciones 11 y 12).</p>
 <h2 id="sec71">9.6 Pruebas funcionales del simulador</h2>
 <p>Ejecutadas contra la API en vivo (detalle en la sección 5): modo <code>online</code> (10 aceptadas, 1 alerta MEDIA), modo <code>offline</code> (8 almacenadas, sincronizadas y <strong>reenvío con 8 duplicadas</strong> que demuestra la idempotencia) y modo <code>anomalia</code> (2 valores fuera de rango marcados como SOSPECHOSA y 1 alerta ALTA).</p>
 <h2 id="sec72">9.7 Pruebas de interfaz</h2>
@@ -1583,7 +1592,7 @@ v20.20.2 500 5.22.0
 <ul>
 <li><strong>No</strong> se ejecutaron pruebas de carga con <strong>k6</strong> ni análisis de seguridad con <strong>OWASP ZAP</strong> (previstos en el borrador); el rendimiento se midió con un script HTTP propio y la seguridad con las pruebas automatizadas descritas.</li>
 <li><strong>No</strong> hay pruebas de interfaz automatizadas en el repositorio (el recorrido del navegador fue una verificación puntual, no una suite versionada).</li>
-<li>La cobertura de <strong>ramas</strong> (68,95 %) es la métrica más baja: cumple el umbral del 60 %, pero revela rutas de error poco ejercitadas (sección 12).</li>
+<li>La cobertura de <strong>ramas</strong> (69,01 %) es la métrica más baja: cumple el umbral del 60 %, pero revela rutas de error poco ejercitadas (sección 12).</li>
 </ul>
 
 </section>
@@ -1743,7 +1752,7 @@ v20.20.2 500 5.22.0
 <td align="center">S</td>
 <td>Dashboard &lt; 2 s; históricos 1 mes &lt; 5 s / 50.000</td>
 <td align="center">✅</td>
-<td>Medido: p50 200,7 ms y 397,4 ms sobre 50 730 filas (TS-43)</td>
+<td>Medido: p50 104,1 ms y 573,7 ms sobre 52 230 filas (TS-43)</td>
 </tr>
 <tr>
 <td>RNF04</td>
@@ -1792,7 +1801,7 @@ v20.20.2 500 5.22.0
 <td align="center">S</td>
 <td>Cobertura ≥ 70 % + integración + carga básica</td>
 <td align="center">✅</td>
-<td>91,96 % líneas (umbral 70 %); 123 pruebas de integración/unitarias</td>
+<td>92,26 % líneas (umbral 70 %); 125 pruebas de integración/unitarias</td>
 </tr>
 <tr>
 <td>RNF11</td>
@@ -1925,7 +1934,7 @@ v20.20.2 500 5.22.0
 <tbody><tr>
 <td>D-08</td>
 <td>187 <em>commits</em> y 34 <em>pull requests</em></td>
-<td><strong>9 commits agrupados</strong>, sin remoto ni PR</td>
+<td><strong>12 commits agrupados</strong>, sin remoto ni PR</td>
 <td>El historial se creó al final; el trabajo no pasó por revisión en remoto</td>
 </tr>
 <tr>
@@ -1955,7 +1964,7 @@ v20.20.2 500 5.22.0
 <tr>
 <td>D-13</td>
 <td>52.340 registros</td>
-<td><strong>50 730</strong> mediciones reales</td>
+<td><strong>52 230</strong> mediciones reales</td>
 <td>Es el conteo efectivo tras las pruebas</td>
 </tr>
 <tr>
@@ -1996,23 +2005,26 @@ v20.20.2 500 5.22.0
 <tr>
 <td>H-04</td>
 <td><strong>Ingesta por lote lenta:</strong> 500 mediciones en <strong>16,4 s</strong> (~30/s)</td>
-<td><strong>No resuelto</strong>: se documenta y se recomienda inserción masiva (sección 12)</td>
+<td><strong>Resuelto (R-01)</strong>: inserción masiva <code>createManyAndReturn</code> + reglas en un paso por lote → <strong>1 403 ms</strong> (≈12×, §9.5)</td>
 </tr>
 <tr>
 <td>H-05</td>
-<td>Cobertura de <strong>ramas</strong> baja (68,95 %) frente a líneas (91,96 %)</td>
+<td>Cobertura de <strong>ramas</strong> baja (69,01 %) frente a líneas (92,26 %)</td>
 <td>Cumple el umbral (60 %), pero revela rutas de error poco ejercitadas</td>
 </tr>
 </tbody></table>
 <h2 id="sec85">11.5 Estado del sistema tras las pruebas</h2>
-<p>Las pruebas <strong>modifican el estado</strong>: la prueba de resolución en la interfaz dejó una alerta resuelta, por lo que la bandeja pasó de <strong>3 a 2 alertas activas</strong>. La tabla <code>medicion</code> incluye <strong>7 000 filas sintéticas</strong> añadidas específicamente para la prueba de volumen TS-43 (declarado en §6.3). Ambas cosas se documentan para que cualquier cifra del informe sea reproducible.</p>
+<p>Las pruebas <strong>modifican el estado</strong>: la prueba de resolución en la interfaz dejó una alerta resuelta, por lo que la bandeja pasó de <strong>3 a 2 alertas activas</strong>. La tabla <code>medicion</code> incluye <strong>7 000 filas sintéticas</strong> añadidas para la prueba de volumen TS-43 y <strong>2 000 filas</strong> de los lotes de rendimiento de escritura (declarado en §6.3). Ambas cosas se documentan para que cualquier cifra del informe sea reproducible.</p>
 <h2 id="sec86">11.6 Balance</h2>
-<p>Las discrepancias se concentran en <strong>tecnología</strong> (justificadas) y en <strong>evidencias de proceso no ejecutadas</strong> (nube, k6, ZAP, Lighthouse, app Android). <strong>No hay requisitos <em>Must</em> funcionales sin implementar</strong>: todas las brechas funcionales son <em>Should/Could</em> o <em>Won&#39;t</em>. El único hallazgo de rendimiento relevante (H-04) afecta al camino de escritura por lote, no a la experiencia de usuario medida.</p>
+<p>Las discrepancias se concentran en <strong>tecnología</strong> (justificadas) y en <strong>evidencias de proceso no ejecutadas</strong> (nube, k6, ZAP, Lighthouse, app Android). <strong>No hay requisitos <em>Must</em> funcionales sin implementar</strong>: todas las brechas funcionales son <em>Should/Could</em> o <em>Won&#39;t</em>. El único hallazgo de rendimiento relevante (H-04, camino de escritura por lote) quedó <strong>resuelto con la optimización R-01</strong>; el camino de lectura siempre estuvo holgadamente dentro de las metas.</p>
 
 </section>
 <section class="doc">
 <h1 id="sec87">12. Recomendaciones Priorizadas</h1>
 <p>Las recomendaciones se ordenan por <strong>prioridad</strong> (P1 alta → P3 baja) y se derivan directamente de las discrepancias (§11) y los hallazgos (§11.4). Cada una indica el esfuerzo estimado y el beneficio esperado.</p>
+<blockquote>
+<p><strong>R-01 quedó implementada en esta entrega.</strong> Durante el cierre se optimizó la ingesta por lote (§9.5): un lote de 500 lecturas pasó de <strong>16,4 s a ~1,4 s</strong> (≈12×). El resto de las recomendaciones permanecen como trabajo futuro.</p>
+</blockquote>
 <h2 id="sec88">12.1 Prioridad alta (P1)</h2>
 <table>
 <thead>
@@ -2026,10 +2038,10 @@ v20.20.2 500 5.22.0
 </thead>
 <tbody><tr>
 <td>R-01</td>
-<td><strong>Optimizar la ingesta por lote</strong>: reemplazar las escrituras individuales por <code>createMany</code>/<code>COPY</code> y diferir la evaluación de reglas a un paso por lote</td>
-<td>H-04 (16,4 s / 500)</td>
+<td>✅ <strong>Implementada</strong> — <strong>Optimizar la ingesta por lote</strong>: inserción masiva (<code>createManyAndReturn</code>) y evaluación de reglas en un paso por lote</td>
+<td>H-04 (16,4 s → 1,4 s / 500)</td>
 <td>Medio</td>
-<td>Hasta dos órdenes de magnitud en el vaciado de búferes offline</td>
+<td><strong>≈12×</strong> menos tiempo en el vaciado de búferes offline</td>
 </tr>
 <tr>
 <td>R-02</td>
@@ -2074,7 +2086,7 @@ v20.20.2 500 5.22.0
 <tr>
 <td>R-06</td>
 <td><strong>Motor de reglas asíncrono</strong> (cola/broker)</td>
-<td>D-06, R-01</td>
+<td>D-06</td>
 <td>Medio–Alto</td>
 <td>Desacopla la ingesta de la evaluación</td>
 </tr>
@@ -2158,7 +2170,7 @@ v20.20.2 500 5.22.0
 
 <pre class="mermaid">flowchart LR
     subgraph Corto plazo
-      R01[R-01 Ingesta] --- R02[R-02 Despliegue] --- R04[R-04 Retención]
+      R01[R-01 Ingesta hecha] --- R02[R-02 Despliegue] --- R04[R-04 Retención]
     end
     subgraph Mediano plazo
       R05[R-05 Redis] --- R06[R-06 Reglas async] --- R07[R-07 Particionado]
@@ -2168,7 +2180,7 @@ v20.20.2 500 5.22.0
     end
     Corto plazo --&gt; Mediano plazo --&gt; Largo plazo</pre>
 
-<p>Las acciones <strong>R-01</strong> y <strong>R-02</strong> son las de mayor retorno: resuelven el único hallazgo de rendimiento y habilitan el uso real del sistema con el hardware del cliente.</p>
+<p><strong>R-01 ya está implementada</strong> (resolvió el único hallazgo de rendimiento). Entre las pendientes, <strong>R-02</strong> es la de mayor retorno: habilita el uso real del sistema con el hardware del cliente.</p>
 
 </section>
 <section class="doc">
@@ -2238,7 +2250,7 @@ v20.20.2 500 5.22.0
 <td><strong>HU08</strong> — Enviar mediciones por API</td>
 <td>RF06</td>
 <td><code>mediciones/</code> · <code>POST /mediciones</code> · <code>POST /mediciones/bulk</code> · <code>apps/simulator/</code></td>
-<td>Suite <code>mediciones</code> (10); simulador (§5)</td>
+<td>Suite <code>mediciones</code> (12); simulador (§5)</td>
 <td>✅</td>
 </tr>
 <tr>
@@ -2288,7 +2300,7 @@ v20.20.2 500 5.22.0
 <tr>
 <td>RNF03 Rendimiento</td>
 <td><code>date_bin</code> + índices; panel con <code>refetchInterval</code></td>
-<td>Script TS-43 (p50 200,7 / 397,4 ms)</td>
+<td>Script TS-43 (p50 104,1 / 573,7 ms)</td>
 <td>✅</td>
 </tr>
 <tr>
@@ -2330,7 +2342,7 @@ v20.20.2 500 5.22.0
 <tr>
 <td>RNF10 Cobertura ≥ 70 %</td>
 <td>Suite completa del proyecto</td>
-<td><code>test:cov</code> → 91,96 % líneas (TS-44)</td>
+<td><code>test:cov</code> → 92,26 % líneas (TS-44)</td>
 <td>✅</td>
 </tr>
 <tr>
@@ -2362,7 +2374,7 @@ v20.20.2 500 5.22.0
 <tr>
 <td><code>mediciones</code></td>
 <td>mediciones (ingesta, idempotencia, calidad)</td>
-<td align="right">10</td>
+<td align="right">12</td>
 </tr>
 <tr>
 <td><code>alertas</code></td>
@@ -2413,13 +2425,13 @@ v20.20.2 500 5.22.0
 <h2 id="sec99">14.2 Sobre la calidad de la implementación</h2>
 <ul>
 <li><strong>Seguridad:</strong> autenticación JWT con refresco rotado y revocado en cookie <code>HttpOnly</code>, RBAC de 21 permisos, contraseñas con bcrypt (coste 12), autenticación de dispositivo con clave hasheada + pepper, validación de entrada con <em>whitelist</em>, endurecimiento HTTP y auditoría de operaciones y denegaciones.</li>
-<li><strong>Calidad:</strong> <strong>123 pruebas en verde</strong> (50 unitarias + 73 de integración) y <strong>91,96 % de cobertura de líneas</strong>, por encima del 70 % exigido, medida sobre la suite completa.</li>
-<li><strong>Rendimiento:</strong> el panel responde en ~0,2 s y una serie de un mes sobre 50 730 filas en ~0,4 s (p50), muy por debajo de las metas de 2 s y 5 s.</li>
+<li><strong>Calidad:</strong> <strong>125 pruebas en verde</strong> (50 unitarias + 75 de integración) y <strong>92,26 % de cobertura de líneas</strong>, por encima del 70 % exigido, medida sobre la suite completa.</li>
+<li><strong>Rendimiento:</strong> el panel responde en ~0,1 s y una serie de un mes sobre 52 230 filas en ~0,6 s (p50), muy por debajo de las metas de 2 s y 5 s.</li>
 <li><strong>Reproducibilidad:</strong> entorno declarado con Docker Compose y CI en GitHub Actions; ejecución local completa verificada.</li>
 </ul>
 <p>Parte de este resultado se explica por una decisión que resultó valiosa: <strong>probar en serio</strong>. Las pruebas de integración descubrieron defectos reales (el <code>500</code> de auditoría por <code>BigInt</code>, la mala clasificación de un <code>422</code>) que de otro modo habrían llegado al usuario.</p>
 <h2 id="sec100">14.3 Sobre la honestidad del informe</h2>
-<p>Se sustituyeron <strong>todas</strong> las cifras de relleno del borrador por mediciones reales y se declararon explícitamente las brechas: no hubo despliegue en nube, ni k6, ni ZAP, ni Lighthouse, ni validación con la app Android, y el almacenamiento NoSQL previsto en ES2 no se implementó. Ninguna de estas ausencias se oculta; cada una tiene su causa en la sección 11 y su recomendación en la 12. Se documentó también el hallazgo de rendimiento del camino de escritura por lote (16,4 s por cada 500 lecturas), que es la principal deuda técnica del proyecto.</p>
+<p>Se sustituyeron <strong>todas</strong> las cifras de relleno del borrador por mediciones reales y se declararon explícitamente las brechas: no hubo despliegue en nube, ni k6, ni ZAP, ni Lighthouse, ni validación con la app Android, y el almacenamiento NoSQL previsto en ES2 no se implementó. Ninguna de estas ausencias se oculta; cada una tiene su causa en la sección 11 y su recomendación en la 12. El hallazgo de rendimiento del camino de escritura por lote (16,4 s por cada 500 lecturas) se documentó y además <strong>se resolvió en esta entrega</strong> con la optimización R-01, bajando ese lote a ~1,4 s (§9.5).</p>
 <h2 id="sec101">14.4 Aprendizajes del equipo</h2>
 <ul>
 <li><strong>Una sola fuente de verdad se demuestra, no se declara.</strong> El paquete <code>@aquabrain/shared</code> solo adquirió valor cuando una prueba de contrato verificó que la API y los esquemas compartidos no divergen.</li>
@@ -2428,7 +2440,7 @@ v20.20.2 500 5.22.0
 <li><strong>Declarar lo no hecho es parte de la ingeniería.</strong> Un informe que reconoce sus límites es más útil que uno que los esconde.</li>
 </ul>
 <h2 id="sec102">14.5 Trabajo futuro</h2>
-<p>Las recomendaciones de la sección 12 marcan la continuidad natural: optimizar la ingesta por lote (<strong>R-01</strong>), desplegar en un entorno real con HTTPS (<strong>R-02</strong>), integrar la app Android y el hardware (R-03), y madurar escalabilidad (Redis, particionado) y cobertura. En conjunto, transforman un prototipo sólido y reproducible en un servicio operable en producción.</p>
+<p>Las recomendaciones de la sección 12 marcan la continuidad natural: desplegar en un entorno real con HTTPS (<strong>R-02</strong>), integrar la app Android y el hardware (R-03), y madurar escalabilidad (Redis, particionado) y cobertura. La optimización de la ingesta por lote (<strong>R-01</strong>) ya se implementó y verificó en esta entrega. En conjunto, estas acciones transforman un prototipo sólido y reproducible en un servicio operable en producción.</p>
 <h2 id="sec103">14.6 Cierre</h2>
 <p>La solución AquaBrain queda <strong>implementada, probada y documentada</strong>, con su trazabilidad completa desde las historias de usuario hasta las pruebas, y con límites declarados con transparencia. El sistema centraliza el monitoreo de las instalaciones de AquaPlants, genera alertas automáticas y sobrevive a cortes de conectividad, que era el objetivo de negocio planteado desde ES1.</p>
 
@@ -2507,16 +2519,21 @@ $env:API_URL=&#39;http://localhost:3000/api/v1&#39;; $env:DEVICE_CODE=&#39;DEV-0
 $env:MODO=&#39;offline&#39;; node dist/simulador.js
 </code></pre>
 <h2 id="sec112">16.2 Anexo B — Rendimiento (TS-43)</h2>
-<p>Salida cruda del script de medición (25 repeticiones por endpoint), sobre <strong>50 730</strong> mediciones:</p>
+<p>Salida cruda del script de medición (25 repeticiones por endpoint), sobre <strong>52 230</strong> mediciones:</p>
 <pre><code class="language-text">endpoint                      muestras min_ms p50_ms p95_ms max_ms bytes
 --------                      -------- ------ ------ ------ ------ -----
-GET /dashboard/estado               25  170,1  200,7  251,4    332  3637
-GET /mediciones/serie (1 mes)       25  188,5  397,4  614,3  637,1 77226
-GET /alertas?porPagina=20           25   47,6   77,8  109,4  112,2  2017
+GET /dashboard/estado               25   88,4  104,1  225,9  328,8  3642
+GET /mediciones/serie (1 mes)       25  231,5  573,7  633,8  730,4 77231
+GET /alertas?porPagina=20           25   59,2   64,8   86,2   91,8  2017
 </code></pre>
-<p>Escritura por lote (<code>POST /mediciones/bulk</code>):</p>
-<pre><code class="language-text">Cuerpo: 78,4 KB, items: 500
+<p>Escritura por lote (<code>POST /mediciones/bulk</code>), <strong>antes y después</strong> de la optimización R-01:</p>
+<pre><code class="language-text"># Antes (una transacción de escritura por lectura)
+Cuerpo: 78,4 KB, items: 500
 HTTP 207 · Tiempo total: 16410 ms
+
+# Después (inserción masiva createManyAndReturn + reglas en un paso por lote)
+Cuerpo: 78,5 KB, items: 500
+HTTP 207 · Tiempo total: 1697 ms · 1403 ms · 1275 ms   (3 corridas; mediana 1403 ms)
 { &quot;recibidas&quot;: 500, &quot;aceptadas&quot;: 500, &quot;duplicadas&quot;: 0, &quot;rechazadas&quot;: 0, &quot;alertasGeneradas&quot;: 0 }
 </code></pre>
 <h2 id="sec113">16.3 Anexo C — Plan de consulta de la serie</h2>

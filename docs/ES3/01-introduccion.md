@@ -14,7 +14,7 @@ Regla que rige todo el informe: **cada cifra proviene de una ejecución real**. 
 | Base de datos | DDL y DER diseñados | **Esquema migrado** con Prisma Migrate y sembrado con 30 días de datos |
 | Frontend | Wireframes y guía visual | **Dashboard React funcional** (panel, históricos, alertas) |
 | Gateway | Supuesto (ESP32-S3 real del cliente) | **Simulador** que reproduce su protocolo de ingesta |
-| Pruebas | Plan TS-01…TS-44 | **123 pruebas ejecutadas** (50 unitarias + 73 de integración) |
+| Pruebas | Plan TS-01…TS-44 | **125 pruebas ejecutadas** (50 unitarias + 75 de integración) |
 | Despliegue | Propuesto | **docker-compose** con API, PostgreSQL y dashboard; CI en GitHub Actions |
 
 El alcance funcional se rige por el MoSCoW de ES1: los requisitos **Must** y **Should** están implementados; lo **Won't** (RF15, RNF04, RNF09) se documenta como pendiente.
@@ -31,8 +31,8 @@ La evidencia de seguimiento es el propio **historial de control de versiones** d
 - **Base de datos:** 19 modelos relacionales en PostgreSQL 16; 20 tablas; la tabla de mediciones supera las **50 000 filas** con índices que mantienen las consultas en el orden de los milisegundos.
 - **Frontend:** dashboard con panel en vivo, series históricas con gráficos y exportación CSV, y bandeja de alertas con resolución; verificado en un navegador real contra la API en ejecución.
 - **Simulador:** reproduce los modos *online*, *offline* (con sincronización diferida e idempotencia) y *anomalía* (valores fuera de rango).
-- **Pruebas:** **123 pruebas en verde**; cobertura combinada por encima del umbral del 70 % en líneas y sentencias.
-- **Rendimiento (TS-43):** panel < 0,4 s y serie de un mes sobre 50 730 filas < 0,7 s (p95), muy por debajo de las metas de 2 s y 5 s.
+- **Pruebas:** **125 pruebas en verde**; cobertura combinada por encima del umbral del 70 % en líneas y sentencias.
+- **Rendimiento (TS-43):** panel < 0,4 s y serie de un mes sobre 52 230 filas < 0,8 s (p95), muy por debajo de las metas de 2 s y 5 s. El lote de 500 lecturas bajó de 16,4 s a ~1,4 s tras la optimización R-01.
 
 ## 1.5 Estructura del documento
 

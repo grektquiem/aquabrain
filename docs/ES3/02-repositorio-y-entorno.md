@@ -34,6 +34,9 @@ Proyecto AquaPlants  AquaBrain/
 El repositorio se inicializó con **git** (rama `main`) y un historial de incrementos reales. Los commits siguen *Conventional Commits* y agrupan unidades coherentes de trabajo (se listan sus mensajes):
 
 ```text
+docs(es3): informe actualizado con la optimizacion R-01
+test(api): idempotencia intra-lote y alertas del lote
+perf(api): ingesta por lote masiva y reglas por lote (R-01)
 docs(es3): informe de implementacion con evidencia real
 docs(es1,es2): catalogo corregido y diseno de la solucion
 ci(infra): pipeline de GitHub Actions y despliegue con Docker
@@ -45,7 +48,7 @@ feat(shared): esquemas Zod como fuente unica del contrato
 chore: configuracion inicial del monorepo con npm workspaces
 ```
 
-> **Nota honesta.** El historial se creó al final del desarrollo (9 commits agrupando el trabajo ya realizado), no como una secuencia diaria de *commits*. No existe repositorio remoto ni *pull requests*: el control de versiones es **local**. Esta desviación respecto del flujo colaborativo descrito en ES2 se registra en la sección 11.
+> **Nota honesta.** El historial se creó al final del desarrollo (12 commits agrupando el trabajo ya realizado), no como una secuencia diaria de *commits*. No existe repositorio remoto ni *pull requests*: el control de versiones es **local**. Esta desviación respecto del flujo colaborativo descrito en ES2 se registra en la sección 11.
 
 Se protegen deliberadamente los secretos: `.gitignore` excluye `.env`, `.env.*` (salvo `.env.example`), `infra/.env`, y todas las carpetas `node_modules/`, `dist/` y `coverage/`. La verificación previa al primer *commit* confirmó que **no se versiona ninguna clave real** (las claves de dispositivo y los secretos JWT solo existen en el entorno local).
 

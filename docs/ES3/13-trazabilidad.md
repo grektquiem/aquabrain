@@ -13,7 +13,7 @@ Esta matriz conecta cada **historia de usuario (HU)** con sus **requisitos funci
 | **HU05** — Gestionar usuarios y roles | RF01, RF02 | `auth/`, `usuarios/`, `PermisosGuard`, `@RequierePermiso` | Suites `auth` (8), `rbac` (11), `gestion` (16) | ✅ |
 | **HU06** — Registrar sistemas, dispositivos y sensores | RF03, RF04, RF05 | `sistemas/`, `dispositivos/`, `sensores/`, `catalogos/` | Suite `gestion` (16), TS-19/TS-20 | ✅ |
 | **HU07** — Reglas y umbrales configurables | RF10 | `reglas/` · `POST /reglas/probar/simulacion` | Suite `gestion`; `reglas.engine.spec`; TS-06 | ✅ |
-| **HU08** — Enviar mediciones por API | RF06 | `mediciones/` · `POST /mediciones` · `POST /mediciones/bulk` · `apps/simulator/` | Suite `mediciones` (10); simulador (§5) | ✅ |
+| **HU08** — Enviar mediciones por API | RF06 | `mediciones/` · `POST /mediciones` · `POST /mediciones/bulk` · `apps/simulator/` | Suite `mediciones` (12); simulador (§5) | ✅ |
 | **HU09** — Suscripciones y licencias | RF15 | — | — | ⬜ *Won't* |
 | **HU10** — Almacenar offline y reintentar | RF06, RF14 | `apps/simulator` (búfer e idempotencia) · `medicion_idempotencia` · frescura derivada | Simulador modo `offline` (8 duplicadas); TS-41; suite `mediciones` | ✅ |
 | **HU11** — Documentación OpenAPI versionada | RF13 | `src/config/openapi.ts` · `/api/docs`, `/api/docs-json` | Suite `contrato` (5), TS-42 | ✅ |
@@ -24,14 +24,14 @@ Esta matriz conecta cada **historia de usuario (HU)** con sus **requisitos funci
 |---|---|---|---|
 | RNF01 Seguridad | `auth/`, `PermisosGuard`, `validation.pipe`, `config/http.ts`, Prisma | Suites `auth`, `rbac`, `limites`; §7 | ✅ |
 | RNF02 Disponibilidad | `health/` · `GET /health` | Sonda funcional; **sin** monitoreo de ventana | 🟡 |
-| RNF03 Rendimiento | `date_bin` + índices; panel con `refetchInterval` | Script TS-43 (p50 200,7 / 397,4 ms) | ✅ |
+| RNF03 Rendimiento | `date_bin` + índices; panel con `refetchInterval` | Script TS-43 (p50 104,1 / 573,7 ms) | ✅ |
 | RNF04 Escalabilidad | Índices `idx_medicion_*`; normalización | `EXPLAIN ANALYZE` (§6.4); **sin** particionado | ⬜ *Won't* |
 | RNF05 Usabilidad | `estilos.css`, mensajes de error del filtro | Revisión visual; **sin** pruebas con usuarios | 🟡 |
 | RNF06 Mantenibilidad | Monorepo, TS estricto, git, README y docs | Inspección; historial de commits | ✅ |
 | RNF07 Portabilidad | `infra/docker-compose.yml`, Dockerfiles, `.env` | `docker compose config` (exit 0); ejecución local | 🟡 |
 | RNF08 Interoperabilidad | OpenAPI + `@aquabrain/shared` | Suite `contrato` (TS-42); **sin** app Android real | 🟡 |
 | RNF09 Autonomía local | — (firmware) | — | ⬜ *Won't* |
-| RNF10 Cobertura ≥ 70 % | Suite completa del proyecto | `test:cov` → 91,96 % líneas (TS-44) | ✅ |
+| RNF10 Cobertura ≥ 70 % | Suite completa del proyecto | `test:cov` → 92,26 % líneas (TS-44) | ✅ |
 | RNF11 Privacidad/ética | `auditoria/`; secretos fuera del repo | §7.6–7.7; **sin** retención automatizada | 🟡 |
 
 ## 13.3 Trazabilidad de casos de prueba a módulos
@@ -40,7 +40,7 @@ Esta matriz conecta cada **historia de usuario (HU)** con sus **requisitos funci
 |---|---|---:|
 | `gestion` | sistemas, cultivos, usuarios, reglas, catálogos | 16 |
 | `rbac` | auth, permisos (transversal) | 11 |
-| `mediciones` | mediciones (ingesta, idempotencia, calidad) | 10 |
+| `mediciones` | mediciones (ingesta, idempotencia, calidad) | 12 |
 | `alertas` | alertas, reglas | 9 |
 | `auth` | auth | 8 |
 | `salud` | salud, arranque | 7 |

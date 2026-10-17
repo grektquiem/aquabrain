@@ -9,15 +9,15 @@ La Unidad 3 pedía **implementar** la solución diseñada en ES2. La entrega mat
 ## 14.2 Sobre la calidad de la implementación
 
 - **Seguridad:** autenticación JWT con refresco rotado y revocado en cookie `HttpOnly`, RBAC de 21 permisos, contraseñas con bcrypt (coste 12), autenticación de dispositivo con clave hasheada + pepper, validación de entrada con *whitelist*, endurecimiento HTTP y auditoría de operaciones y denegaciones.
-- **Calidad:** **123 pruebas en verde** (50 unitarias + 73 de integración) y **91,96 % de cobertura de líneas**, por encima del 70 % exigido, medida sobre la suite completa.
-- **Rendimiento:** el panel responde en ~0,2 s y una serie de un mes sobre 50 730 filas en ~0,4 s (p50), muy por debajo de las metas de 2 s y 5 s.
+- **Calidad:** **125 pruebas en verde** (50 unitarias + 75 de integración) y **92,26 % de cobertura de líneas**, por encima del 70 % exigido, medida sobre la suite completa.
+- **Rendimiento:** el panel responde en ~0,1 s y una serie de un mes sobre 52 230 filas en ~0,6 s (p50), muy por debajo de las metas de 2 s y 5 s.
 - **Reproducibilidad:** entorno declarado con Docker Compose y CI en GitHub Actions; ejecución local completa verificada.
 
 Parte de este resultado se explica por una decisión que resultó valiosa: **probar en serio**. Las pruebas de integración descubrieron defectos reales (el `500` de auditoría por `BigInt`, la mala clasificación de un `422`) que de otro modo habrían llegado al usuario.
 
 ## 14.3 Sobre la honestidad del informe
 
-Se sustituyeron **todas** las cifras de relleno del borrador por mediciones reales y se declararon explícitamente las brechas: no hubo despliegue en nube, ni k6, ni ZAP, ni Lighthouse, ni validación con la app Android, y el almacenamiento NoSQL previsto en ES2 no se implementó. Ninguna de estas ausencias se oculta; cada una tiene su causa en la sección 11 y su recomendación en la 12. Se documentó también el hallazgo de rendimiento del camino de escritura por lote (16,4 s por cada 500 lecturas), que es la principal deuda técnica del proyecto.
+Se sustituyeron **todas** las cifras de relleno del borrador por mediciones reales y se declararon explícitamente las brechas: no hubo despliegue en nube, ni k6, ni ZAP, ni Lighthouse, ni validación con la app Android, y el almacenamiento NoSQL previsto en ES2 no se implementó. Ninguna de estas ausencias se oculta; cada una tiene su causa en la sección 11 y su recomendación en la 12. El hallazgo de rendimiento del camino de escritura por lote (16,4 s por cada 500 lecturas) se documentó y además **se resolvió en esta entrega** con la optimización R-01, bajando ese lote a ~1,4 s (§9.5).
 
 ## 14.4 Aprendizajes del equipo
 
@@ -28,7 +28,7 @@ Se sustituyeron **todas** las cifras de relleno del borrador por mediciones real
 
 ## 14.5 Trabajo futuro
 
-Las recomendaciones de la sección 12 marcan la continuidad natural: optimizar la ingesta por lote (**R-01**), desplegar en un entorno real con HTTPS (**R-02**), integrar la app Android y el hardware (R-03), y madurar escalabilidad (Redis, particionado) y cobertura. En conjunto, transforman un prototipo sólido y reproducible en un servicio operable en producción.
+Las recomendaciones de la sección 12 marcan la continuidad natural: desplegar en un entorno real con HTTPS (**R-02**), integrar la app Android y el hardware (R-03), y madurar escalabilidad (Redis, particionado) y cobertura. La optimización de la ingesta por lote (**R-01**) ya se implementó y verificó en esta entrega. En conjunto, estas acciones transforman un prototipo sólido y reproducible en un servicio operable en producción.
 
 ## 14.6 Cierre
 

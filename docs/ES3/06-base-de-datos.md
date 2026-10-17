@@ -26,10 +26,10 @@ Conteos tomados directamente de PostgreSQL tras ejecutar todas las pruebas y cor
 
 | Tabla | Filas | Nota |
 |---|---:|---|
-| `medicion` | **50 730** | Ver composición abajo |
-| `auditoria` | 662 | Generadas por las pruebas y el uso |
-| `medicion_idempotencia` | 530 | Claves de idempotencia registradas |
-| `refresh_token` | 86 | Sesiones emitidas/revocadas |
+| `medicion` | **52 230** | Ver composición abajo |
+| `auditoria` | 877 | Generadas por las pruebas y el uso |
+| `medicion_idempotencia` | 2 030 | Claves de idempotencia registradas |
+| `refresh_token` | 110 | Sesiones emitidas/revocadas |
 | `rol_permiso` | 39 | Asignaciones permiso↔rol |
 | `permiso` | 21 | Catálogo de permisos |
 | `sensor` | 10 | 5 por dispositivo |
@@ -45,15 +45,15 @@ Conteos tomados directamente de PostgreSQL tras ejecutar todas las pruebas y cor
 
 ## 6.3 Composición de la tabla de mediciones
 
-El total de **50 730** mediciones se descompone así:
+El total de **52 230** mediciones se descompone así:
 
 | Origen de las filas | Cantidad |
 |---|---:|
 | Semilla determinista (30 días × 10 min × 10 sensores) | 43 200 |
 | Carga sintética para la prueba de volumen TS-43 | 7 000 |
-| Lote de rendimiento (500 lecturas por la API) | 500 |
+| Lotes de rendimiento de escritura (4 × 500 lecturas por la API) | 2 000 |
 | Ingesta del simulador (modos online/offline/anomalía) | 30 |
-| **Total** | **50 730** |
+| **Total** | **52 230** |
 
 Se verificó que la **calidad** y el **origen** se registran correctamente:
 
@@ -61,9 +61,9 @@ Se verificó que la **calidad** y el **origen** se registran correctamente:
 |---|---|---:|
 | ONLINE | OK | 50 220 |
 | ONLINE | SOSPECHOSA | 2 |
-| OFFLINE | OK | 508 |
+| OFFLINE | OK | 2 008 |
 
-Las **2** mediciones `SOSPECHOSA` son exactamente los valores fuera de rango inyectados por el simulador en el modo anomalía, lo que confirma que **no se descartan** (TS-07). Las 508 `OFFLINE` provienen del lote sincronizado del simulador (8) y del lote de rendimiento (500), enviado con `origen = OFFLINE`.
+Las **2** mediciones `SOSPECHOSA` son exactamente los valores fuera de rango inyectados por el simulador en el modo anomalía, lo que confirma que **no se descartan** (TS-07). Las 2 008 `OFFLINE` provienen del lote sincronizado del simulador (8) y de los lotes de rendimiento de escritura (2 000), enviados con `origen = OFFLINE`.
 
 ## 6.4 Índices y rendimiento
 

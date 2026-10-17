@@ -32,21 +32,26 @@ $env:MODO='offline'; node dist/simulador.js
 
 ## 16.2 Anexo B — Rendimiento (TS-43)
 
-Salida cruda del script de medición (25 repeticiones por endpoint), sobre **50 730** mediciones:
+Salida cruda del script de medición (25 repeticiones por endpoint), sobre **52 230** mediciones:
 
 ```text
 endpoint                      muestras min_ms p50_ms p95_ms max_ms bytes
 --------                      -------- ------ ------ ------ ------ -----
-GET /dashboard/estado               25  170,1  200,7  251,4    332  3637
-GET /mediciones/serie (1 mes)       25  188,5  397,4  614,3  637,1 77226
-GET /alertas?porPagina=20           25   47,6   77,8  109,4  112,2  2017
+GET /dashboard/estado               25   88,4  104,1  225,9  328,8  3642
+GET /mediciones/serie (1 mes)       25  231,5  573,7  633,8  730,4 77231
+GET /alertas?porPagina=20           25   59,2   64,8   86,2   91,8  2017
 ```
 
-Escritura por lote (`POST /mediciones/bulk`):
+Escritura por lote (`POST /mediciones/bulk`), **antes y después** de la optimización R-01:
 
 ```text
+# Antes (una transacción de escritura por lectura)
 Cuerpo: 78,4 KB, items: 500
 HTTP 207 · Tiempo total: 16410 ms
+
+# Después (inserción masiva createManyAndReturn + reglas en un paso por lote)
+Cuerpo: 78,5 KB, items: 500
+HTTP 207 · Tiempo total: 1697 ms · 1403 ms · 1275 ms   (3 corridas; mediana 1403 ms)
 { "recibidas": 500, "aceptadas": 500, "duplicadas": 0, "rechazadas": 0, "alertasGeneradas": 0 }
 ```
 

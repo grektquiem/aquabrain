@@ -34,14 +34,14 @@ Cada requisito del catálogo canónico (ES1) se contrasta con lo que **realmente
 |---|:--:|---|:--:|---|
 | RNF01 | M | Seguridad: bcrypt, JWT, validación, SQLi/XSS | ✅ | bcrypt coste 12; JWT; pipe whitelist; ORM parametrizado; helmet (ver §7) |
 | RNF02 | S | Disponibilidad 99 % en horario de operación | 🟡 | Existe sonda `/health`; **no** se monitoreó uptime en una ventana |
-| RNF03 | S | Dashboard < 2 s; históricos 1 mes < 5 s / 50.000 | ✅ | Medido: p50 200,7 ms y 397,4 ms sobre 50 730 filas (TS-43) |
+| RNF03 | S | Dashboard < 2 s; históricos 1 mes < 5 s / 50.000 | ✅ | Medido: p50 104,1 ms y 573,7 ms sobre 52 230 filas (TS-43) |
 | RNF04 | W | Escalabilidad: índices, normalización, particionado | ⬜ | Índices y normalización sí; particionado **no** (*Won't*, ver §11) |
 | RNF05 | M | Usabilidad: responsive, mensajes claros | 🟡 | CSS responsive y errores claros; **sin** pruebas con usuarios; **sin** verificar consistencia con el display OLED |
 | RNF06 | M | Mantenibilidad: buenas prácticas, Git, documentación | ✅ | Monorepo, TS estricto, git, README y docs ES1–ES3 |
 | RNF07 | S | Portabilidad: Docker/PaaS con variables de entorno | 🟡 | Compose + Dockerfiles validados; ejecución **local**; **sin** segundo entorno nube |
 | RNF08 | S | Interoperabilidad (firmware, app Android, dashboard) | 🟡 | Contrato OpenAPI + `@aquabrain/shared`; **no** validado con la app Android real |
 | RNF09 | W | Autonomía local (OLED + joystick) | ⬜ | Depende del firmware (*Won't*) |
-| RNF10 | S | Cobertura ≥ 70 % + integración + carga básica | ✅ | 91,96 % líneas (umbral 70 %); 123 pruebas de integración/unitarias |
+| RNF10 | S | Cobertura ≥ 70 % + integración + carga básica | ✅ | 92,26 % líneas (umbral 70 %); 125 pruebas de integración/unitarias |
 | RNF11 | M | Privacidad y cumplimiento ético | 🟡 | Auditoría y no versionado de secretos; **sin** política de retención/anonimización automatizada |
 
 ## 10.4 Casos del plan de pruebas (TS-01…TS-44)

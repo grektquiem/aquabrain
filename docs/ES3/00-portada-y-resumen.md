@@ -23,16 +23,18 @@ Esta entrega corresponde a la **Unidad 3 (implementación)**. A diferencia de ES
 - **Base de datos PostgreSQL 16** con 19 modelos, migrada con Prisma y sembrada con 30 días de datos; **más de 50 000 mediciones** e índices que sostienen consultas en milisegundos.
 - **Dashboard React** con panel en vivo, históricos con gráficos y exportación CSV, y bandeja de alertas con resolución; verificado en navegador real.
 - **Simulador del gateway** con modos *online*, *offline* (idempotencia) y *anomalía*.
+- **Ingesta por lote optimizada** (R-01): inserción masiva y evaluación de reglas por lote; un lote de 500 lecturas baja de **16,4 s a ~1,4 s**.
 - **Docker Compose + CI**; imagen de la API construida y verificada.
 
 **Resultados medidos:**
 
 | Métrica | Resultado | Meta |
 |---|---|---|
-| Pruebas automatizadas | **123 en verde** (50 unitarias + 73 integración) | — |
-| Cobertura de líneas | **91,96 %** | ≥ 70 % |
-| Panel (p50) | **200,7 ms** | < 2 000 ms |
-| Históricos 1 mes sobre 50 730 filas (p50) | **397,4 ms** | < 5 000 ms |
+| Pruebas automatizadas | **125 en verde** (50 unitarias + 75 integración) | — |
+| Cobertura de líneas | **92,26 %** | ≥ 70 % |
+| Panel (p50) | **104,1 ms** | < 2 000 ms |
+| Históricos 1 mes sobre 52 230 filas (p50) | **573,7 ms** | < 5 000 ms |
+| Ingesta por lote de 500 lecturas (mediana) | **1 403 ms** | — |
 | Imagen Docker de la API | construida (162 MB, 82,2 s) | reproducible |
 
 **Regla de honestidad del informe:** toda cifra proviene de una ejecución real. Lo diseñado en ES2 que no se implementó se declara de forma explícita en la sección 11 (*Análisis de discrepancias*) —por ejemplo, el despliegue en nube, las pruebas con k6/ZAP/Lighthouse, el almacenamiento NoSQL y el particionado— en lugar de ocultarse.

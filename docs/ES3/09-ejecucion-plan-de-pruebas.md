@@ -5,8 +5,8 @@
 | Tipo | Suites | Casos | Resultado | Herramienta |
 |---|---:|---:|---|---|
 | Unitarias | 8 | **50** | ✅ 50 en verde | Jest |
-| Integración (e2e) | 9 | **73** | ✅ 73 en verde | Jest + Supertest |
-| **Total automatizado** | **17** | **123** | **✅ 123 en verde** | — |
+| Integración (e2e) | 9 | **75** | ✅ 75 en verde | Jest + Supertest |
+| **Total automatizado** | **17** | **125** | **✅ 125 en verde** | — |
 | Rendimiento | — | 3 endpoints + 1 escritura | ✅ metas cumplidas | Script HTTP propio |
 | Interfaz | — | 4 pantallas + 2 acciones | ✅ verificado en navegador | Navegador automatizado |
 
@@ -25,7 +25,7 @@ La cobertura se mide sobre la **suite completa** (unitarias + integración), que
 | `auditoria.interceptor.spec.ts` | 3 | Registro de operaciones |
 | `tiempo.spec.ts` | 3 | Utilidades de tiempo (tolerancia de `timestamp`) |
 
-## 9.3 Pruebas de integración (9 suites / 73 casos)
+## 9.3 Pruebas de integración (9 suites / 75 casos)
 
 Todas las suites de integración levantan la aplicación con la **misma configuración que `main.ts`** (endurecimiento HTTP, prefijo, pipe y OpenAPI) y utilizan un **tenant propio por suite** (sistema + dispositivo + sensores) que se elimina al terminar, de modo que ninguna prueba depende del estado dejado por otra.
 
@@ -33,7 +33,7 @@ Todas las suites de integración levantan la aplicación con la **misma configur
 |---|---:|---|
 | `gestion.e2e-spec.ts` | 16 | CRUD de sistemas, cultivos, usuarios, reglas y catálogos; reglas de negocio (409/404/400/422, hash bcrypt, autocuenta 403, autorrol 403) |
 | `rbac.e2e-spec.ts` | 11 | Matriz de permisos por rol (401/403) |
-| `mediciones.e2e-spec.ts` | 10 | Ingesta individual y por lote (207), idempotencia, calidad SOSPECHOSA, validaciones |
+| `mediciones.e2e-spec.ts` | 12 | Ingesta individual y por lote (207), idempotencia (entre lotes y dentro de un lote), calidad SOSPECHOSA, validaciones y alertas del lote |
 | `alertas.e2e-spec.ts` | 9 | Listado, filtros, resumen y resolución |
 | `auth.e2e-spec.ts` | 8 | Login, refresco, revocación, bloqueo por intentos, token inválido |
 | `salud.e2e-spec.ts` | 7 | Sonda de salud y arranque |
@@ -47,26 +47,26 @@ Combinando unitarias e integración sobre 41 archivos de producción:
 
 | Métrica | Cobertura | Umbral | ¿Cumple? |
 |---|---:|---:|---|
-| Líneas | **91,96 %** | 70 % | ✅ |
-| Sentencias | **90,70 %** | 70 % | ✅ |
-| Funciones | **88,66 %** | 60 % | ✅ |
-| Ramas | **68,95 %** | 60 % | ✅ |
+| Líneas | **92,26 %** | 70 % | ✅ |
+| Sentencias | **91,09 %** | 70 % | ✅ |
+| Funciones | **89,49 %** | 60 % | ✅ |
+| Ramas | **69,01 %** | 60 % | ✅ |
 
 El informe se genera con `npm run test:cov`, que ejecuta ambas suites, fusiona los resultados y **falla si no se alcanza el umbral** (`scripts/coverage-combinado.js`). El artefacto combinado (texto, `lcov`, HTML y `json-summary`) queda en `apps/api/coverage/combinado`.
 
 ## 9.5 Pruebas de rendimiento (TS-43)
 
-**Meta:** panel < 2 s; históricos de un mes < 5 s con 50 000 registros. **Volumen real de la tabla:** 50 730 filas.
+**Meta:** panel < 2 s; históricos de un mes < 5 s con 50 000 registros. **Volumen real de la tabla:** 52 230 filas.
 
 Medición sobre 25 repeticiones por endpoint (milisegundos):
 
 | Endpoint | mín | p50 | p95 | máx | Cumple |
 |---|---:|---:|---:|---:|---|
-| `GET /dashboard/estado` | 170,1 | **200,7** | 251,4 | 332,0 | ✅ (< 2000 ms) |
-| `GET /mediciones/serie` (1 mes, 723 puntos, 77 KB) | 188,5 | **397,4** | 614,3 | 637,1 | ✅ (< 5000 ms) |
-| `GET /alertas?porPagina=20` | 47,6 | **77,8** | 109,4 | 112,2 | ✅ |
+| `GET /dashboard/estado` | 88,4 | **104,1** | 225,9 | 328,8 | ✅ (< 2000 ms) |
+| `GET /mediciones/serie` (1 mes, 723 puntos, 77 KB) | 231,5 | **573,7** | 633,8 | 730,4 | ✅ (< 5000 ms) |
+| `GET /alertas?porPagina=20` | 59,2 | **64,8** | 86,2 | 91,8 | ✅ |
 
-La consulta de series agregada por hora a nivel de base de datos toma **≈2,2 ms** (`EXPLAIN ANALYZE`, sección 6). En el camino de escritura, un lote completo de **500 mediciones** por `POST /mediciones/bulk` (500 aceptadas, 0 rechazadas) tardó **16,4 s**; este resultado, que es el más alto del sistema, se analiza como hallazgo en las secciones 11 y 12.
+La consulta de series agregada por hora a nivel de base de datos toma **≈2,2 ms** (`EXPLAIN ANALYZE`, sección 6). En el camino de escritura, un lote completo de **500 mediciones** por `POST /mediciones/bulk` (500 aceptadas, 0 rechazadas) tardó inicialmente **16,4 s**; tras implementar la recomendación **R-01** (inserción masiva `createManyAndReturn` y evaluación de reglas en un paso por lote) el mismo lote baja a **1 403 ms** de mediana (tres corridas: 1 697 / 1 403 / 1 275 ms), es decir **≈12× más rápido**. El hallazgo H-04 queda resuelto (secciones 11 y 12).
 
 ## 9.6 Pruebas funcionales del simulador
 
@@ -80,4 +80,4 @@ El dashboard se recorrió en un navegador real contra la API (detalle en la secc
 
 - **No** se ejecutaron pruebas de carga con **k6** ni análisis de seguridad con **OWASP ZAP** (previstos en el borrador); el rendimiento se midió con un script HTTP propio y la seguridad con las pruebas automatizadas descritas.
 - **No** hay pruebas de interfaz automatizadas en el repositorio (el recorrido del navegador fue una verificación puntual, no una suite versionada).
-- La cobertura de **ramas** (68,95 %) es la métrica más baja: cumple el umbral del 60 %, pero revela rutas de error poco ejercitadas (sección 12).
+- La cobertura de **ramas** (69,01 %) es la métrica más baja: cumple el umbral del 60 %, pero revela rutas de error poco ejercitadas (sección 12).

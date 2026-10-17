@@ -23,12 +23,12 @@ Esta sección confronta el **diseño de ES2** y el **borrador del informe** con 
 
 | # | Esperado (borrador) | Realidad | Causa |
 |---|---|---|---|
-| D-08 | 187 *commits* y 34 *pull requests* | **9 commits agrupados**, sin remoto ni PR | El historial se creó al final; el trabajo no pasó por revisión en remoto |
+| D-08 | 187 *commits* y 34 *pull requests* | **12 commits agrupados**, sin remoto ni PR | El historial se creó al final; el trabajo no pasó por revisión en remoto |
 | D-09 | Despliegue en **Render** | **Local + docker-compose** validado; imagen de la API **construida** (`aquabrain-api:dev`, 82,2 s) | No se gestionó cuenta de nube |
 | D-10 | Pruebas de carga con **k6** | Script HTTP propio (25 repeticiones por endpoint) | k6 no estaba disponible en el entorno |
 | D-11 | Análisis de seguridad con **OWASP ZAP** | Pruebas automatizadas propias | Sin herramienta ni alcance para un escaneo formal |
 | D-12 | **Lighthouse = 94** | **No ejecutado** | Se priorizó la verificación funcional en navegador |
-| D-13 | 52.340 registros | **50 730** mediciones reales | Es el conteo efectivo tras las pruebas |
+| D-13 | 52.340 registros | **52 230** mediciones reales | Es el conteo efectivo tras las pruebas |
 | D-14 | Validación contra la **app Android** real | Contrato verificado por prueba automatizada (TS-42) | La app de prueba no estaba disponible para integrarla |
 
 > **Sobre las cifras del borrador.** Valores como «187 commits», «34 PR», «Lighthouse 94», «52.340 registros» o las corridas de ZAP/k6 eran **placeholders**. En este informe se reemplazaron por mediciones reales o se marcaron como **no ejecutados** (D-08…D-14).
@@ -42,13 +42,13 @@ Son defectos o comportamientos **descubiertos al probar**, no supuestos:
 | H-01 | `GET /auditoria` devolvía **500** por serializar `BigInt` | Se serializa el `id` a cadena en el controlador |
 | H-02 | Un `422` con cuerpo de texto se etiquetaba como `ERROR_INTERNO` | El código de error ahora **se deriva del estado HTTP** |
 | H-03 | Precedencia de reglas ambigua (sensor vs. tipo de variable) | Se fija: si hay reglas del sensor, se ignoran las de tipo (RN-07) |
-| H-04 | **Ingesta por lote lenta:** 500 mediciones en **16,4 s** (~30/s) | **No resuelto**: se documenta y se recomienda inserción masiva (sección 12) |
-| H-05 | Cobertura de **ramas** baja (68,95 %) frente a líneas (91,96 %) | Cumple el umbral (60 %), pero revela rutas de error poco ejercitadas |
+| H-04 | **Ingesta por lote lenta:** 500 mediciones en **16,4 s** (~30/s) | **Resuelto (R-01)**: inserción masiva `createManyAndReturn` + reglas en un paso por lote → **1 403 ms** (≈12×, §9.5) |
+| H-05 | Cobertura de **ramas** baja (69,01 %) frente a líneas (92,26 %) | Cumple el umbral (60 %), pero revela rutas de error poco ejercitadas |
 
 ## 11.5 Estado del sistema tras las pruebas
 
-Las pruebas **modifican el estado**: la prueba de resolución en la interfaz dejó una alerta resuelta, por lo que la bandeja pasó de **3 a 2 alertas activas**. La tabla `medicion` incluye **7 000 filas sintéticas** añadidas específicamente para la prueba de volumen TS-43 (declarado en §6.3). Ambas cosas se documentan para que cualquier cifra del informe sea reproducible.
+Las pruebas **modifican el estado**: la prueba de resolución en la interfaz dejó una alerta resuelta, por lo que la bandeja pasó de **3 a 2 alertas activas**. La tabla `medicion` incluye **7 000 filas sintéticas** añadidas para la prueba de volumen TS-43 y **2 000 filas** de los lotes de rendimiento de escritura (declarado en §6.3). Ambas cosas se documentan para que cualquier cifra del informe sea reproducible.
 
 ## 11.6 Balance
 
-Las discrepancias se concentran en **tecnología** (justificadas) y en **evidencias de proceso no ejecutadas** (nube, k6, ZAP, Lighthouse, app Android). **No hay requisitos *Must* funcionales sin implementar**: todas las brechas funcionales son *Should/Could* o *Won't*. El único hallazgo de rendimiento relevante (H-04) afecta al camino de escritura por lote, no a la experiencia de usuario medida.
+Las discrepancias se concentran en **tecnología** (justificadas) y en **evidencias de proceso no ejecutadas** (nube, k6, ZAP, Lighthouse, app Android). **No hay requisitos *Must* funcionales sin implementar**: todas las brechas funcionales son *Should/Could* o *Won't*. El único hallazgo de rendimiento relevante (H-04, camino de escritura por lote) quedó **resuelto con la optimización R-01**; el camino de lectura siempre estuvo holgadamente dentro de las metas.
