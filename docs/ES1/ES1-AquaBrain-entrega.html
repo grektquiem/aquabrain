@@ -1,0 +1,3324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de Control y Monitoreo para AquaPlants / AquaBrain — ES1: Diagnóstico del problema informático</title>
+<style>
+  :root { --azul:#1a3d6d; --azul2:#2a5599; --verde:#1f7a63; --gris:#555; }
+  * { box-sizing: border-box; }
+  body { font-family:'Calibri','Segoe UI',Arial,sans-serif; font-size:11pt; line-height:1.5; margin:0; color:#111; background:#fff; }
+  .page { max-width: 900px; margin: 0 auto; padding: 2.2cm 1.8cm; }
+  h1 { font-size:20pt; color:var(--azul); border-bottom:2px solid var(--azul); padding-bottom:5px; margin-top:8px; }
+  h2 { font-size:15pt; color:var(--azul); margin-top:22px; border-bottom:1px solid #999; padding-bottom:3px; }
+  h3 { font-size:12.5pt; color:var(--azul2); margin-top:16px; }
+  h4 { font-size:11pt; color:var(--azul2); margin-top:12px; }
+  a { color:var(--azul2); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; font-size:9.5pt; }
+  th,td { border:1px solid #7a7a7a; padding:5px 7px; text-align:left; vertical-align:top; }
+  th { background:#d9e2f3; font-weight:bold; }
+  tr:nth-child(even) td { background:#f4f7fb; }
+  pre { background:#f6f8fa; border:1px solid #ccc; border-radius:4px; padding:9px 11px; font-family:'Consolas','Courier New',monospace; font-size:9pt; white-space:pre-wrap; word-wrap:break-word; overflow-wrap:anywhere; }
+  code { font-family:'Consolas','Courier New',monospace; font-size:9pt; background:#eef2f7; padding:1px 3px; border-radius:3px; }
+  pre code { background:none; padding:0; }
+  blockquote { border-left:4px solid var(--verde); background:#eef7f4; margin:10px 0; padding:6px 12px; color:#234; }
+  hr { border:0; border-top:1px solid #bbb; margin:18px 0; }
+  ul,ol { margin:6px 0 6px 22px; }
+  li { margin:2px 0; }
+  img { max-width:100%; border:1px solid #bbb; border-radius:5px; margin:8px 0; }
+  .mermaid { background:#fbfcfe; border:0; text-align:center; page-break-inside:avoid; }
+  .doc { page-break-before: always; }
+  .cover { min-height: 96vh; display:flex; flex-direction:column; justify-content:center; text-align:center; page-break-after:always; }
+  .cover h1 { border:0; font-size:25pt; margin:0 0 6px; }
+  .cover .sub { font-size:14pt; color:var(--azul2); margin-bottom:28px; }
+  .cover .meta { display:inline-block; text-align:left; font-size:11pt; border:1px solid #999; border-radius:6px; padding:14px 22px; }
+  .cover .meta div { margin:3px 0; }
+  .toc { list-style:none; margin-left:0; }
+  .toc ul { list-style:none; margin-left:16px; }
+  .toc li.lvl1 { margin-top:6px; font-weight:600; }
+  .toc li.lvl2 { font-weight:400; }
+  .toolbar { position:fixed; top:10px; right:14px; z-index:50; }
+  .toolbar button { font:inherit; font-size:10pt; padding:6px 10px; border:1px solid #999; background:#fff; border-radius:5px; cursor:pointer; }
+  @media print { .toolbar { display:none; } body { font-size:10.5pt; } .page { max-width:none; padding:0; } .doc { page-break-before:always; } }
+</style>
+</head>
+<body>
+<div class="toolbar"><button onclick="window.print()">Imprimir / PDF</button></div>
+
+<div class="cover">
+  <h1>Sistema de Control y Monitoreo para AquaPlants&nbsp;/&nbsp;AquaBrain</h1>
+  <div class="sub">ES1 — Diagnóstico del Problema Informático</div>
+  <div class="meta">
+    <div><strong>Asignatura:</strong> Proyecto Integrado (4.º semestre)</div>
+    <div><strong>Unidad:</strong> 1 — Diagnóstico del problema informático</div>
+    <div><strong>Equipo:</strong> Benjamín Alfonso Espinoza Gangas · Luis Humberto Pizarro Muñoz · Rodrigo Andrés Terraza Herrera</div>
+    <div><strong>Docente:</strong> Armin Vladimir Brunt Ruth</div>
+    <div><strong>Contraparte:</strong> AquaPlants / AquaBrain (Robotic Systems)</div>
+    <div><strong>Priorización:</strong> MoSCoW (Must / Should / Could / Won't)</div>
+    <div><strong>Fecha del documento:</strong> 16 de octubre de 2026</div>
+  </div>
+</div>
+
+<div class="page">
+<h1 id="indice">Índice</h1>
+<ul class="toc">
+<li class="lvl1"><a href="#sec1">ES1 — Diagnóstico del problema informático</a>
+<ul>
+<li class="lvl2"><a href="#sec2">Plataforma web de monitoreo y gestión de cultivos aeropónico · AquaPlants / AquaBrain</a></li>
+<li class="lvl2"><a href="#sec3">Resumen ejecutivo</a></li>
+<li class="lvl2"><a href="#sec4">Cómo este informe cubre la rúbrica</a></li>
+<li class="lvl2"><a href="#sec5">Índice</a></li>
+<li class="lvl2"><a href="#sec6">Nota metodológica y de honestidad intelectual</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec7">01 · Introducción, contexto y alcance del diagnóstico</a>
+<ul>
+<li class="lvl2"><a href="#sec8">1.1. Contexto de la empresa y del desafío</a></li>
+<li class="lvl2"><a href="#sec9">1.2. Situación problemática (diagnóstico)</a></li>
+<li class="lvl2"><a href="#sec10">1.3. Objetivo general y objetivos específicos</a></li>
+<li class="lvl2"><a href="#sec11">1.4. Alcance del diagnóstico</a></li>
+<li class="lvl2"><a href="#sec12">1.5. Enfoque y fuentes del levantamiento</a></li>
+<li class="lvl2"><a href="#sec13">1.6. Supuestos y validaciones pendientes con la contraparte</a></li>
+<li class="lvl2"><a href="#sec14">1.7. Estructura del informe</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec15">02 · Caracterización del ecosistema y de los actores</a>
+<ul>
+<li class="lvl2"><a href="#sec16">2.1. El ecosistema físico-digital</a></li>
+<li class="lvl2"><a href="#sec17">2.2. Hardware y clientes reales entregados por la empresa</a></li>
+<li class="lvl2"><a href="#sec18">2.3. Variables de cultivo: reales y simuladas</a></li>
+<li class="lvl2"><a href="#sec19">2.4. Flujo dispositivo → dato → aplicación</a></li>
+<li class="lvl2"><a href="#sec20">2.5. Actores y sus necesidades</a></li>
+<li class="lvl2"><a href="#sec21">2.6. Puente hacia las necesidades TI</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec22">03 · Matriz de necesidades TI y priorización</a>
+<ul>
+<li class="lvl2"><a href="#sec23">3.1. Método de identificación</a></li>
+<li class="lvl2"><a href="#sec24">3.2. Matriz de necesidades TI (NEC-01…NEC-09)</a></li>
+<li class="lvl2"><a href="#sec25">3.3. Priorización justificada</a></li>
+<li class="lvl2"><a href="#sec26">3.4. Necesidades no atendidas por ahora (Won&#39;t)</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec27">04 · Tendencias de TI aplicables</a>
+<ul>
+<li class="lvl2"><a href="#sec28">4.1. Criterio de selección: pertinencia, no moda</a></li>
+<li class="lvl2"><a href="#sec29">4.2. Tendencias aplicables y su impacto</a></li>
+<li class="lvl2"><a href="#sec30">4.3. Tendencias evaluadas y no adoptadas</a></li>
+<li class="lvl2"><a href="#sec31">4.4. Síntesis del impacto en el proyecto</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec32">05 · Metodología de desarrollo</a>
+<ul>
+<li class="lvl2"><a href="#sec33">5.1. Criterios de comparación</a></li>
+<li class="lvl2"><a href="#sec34">5.2. Alternativas consideradas</a></li>
+<li class="lvl2"><a href="#sec35">5.3. Comparación cuantitativa</a></li>
+<li class="lvl2"><a href="#sec36">5.4. Comparación cualitativa</a></li>
+<li class="lvl2"><a href="#sec37">5.5. Decisión y justificación</a></li>
+<li class="lvl2"><a href="#sec38">5.6. Implicancias de la elección</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec39">06 · Historias de usuario (backlog inicial)</a>
+<ul>
+<li class="lvl2"><a href="#sec40">6.1. Formato adoptado</a></li>
+<li class="lvl2"><a href="#sec41">6.2. Backlog HU01…HU11</a></li>
+<li class="lvl2"><a href="#sec42">6.3. Adaptación de las historias al negocio y a los usuarios finales</a></li>
+<li class="lvl2"><a href="#sec43">6.4. Priorización y plan de entregas</a></li>
+<li class="lvl2"><a href="#sec44">6.5. Historia fuera de alcance</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec45">07 · Catálogo de requerimientos funcionales y no funcionales</a>
+<ul>
+<li class="lvl2"><a href="#sec46">7.1. Criterio de clasificación</a></li>
+<li class="lvl2"><a href="#sec47">7.2. Requerimientos funcionales (RF01…RF15)</a></li>
+<li class="lvl2"><a href="#sec48">7.3. Requerimientos no funcionales (RNF01…RNF11)</a></li>
+<li class="lvl2"><a href="#sec49">7.4. Ejemplos explicados de cada tipo</a></li>
+<li class="lvl2"><a href="#sec50">7.5. Matriz MoSCoW consolidada</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec51">08 · Trazabilidad y relaciones entre artefactos</a>
+<ul>
+<li class="lvl2"><a href="#sec52">8.1. Modelo de trazabilidad</a></li>
+<li class="lvl2"><a href="#sec53">8.2. Matriz principal: necesidad → historia → requisito → caso de uso → diseño → implementación → prueba</a></li>
+<li class="lvl2"><a href="#sec54">8.3. Cobertura de los criterios de aceptación por historia</a></li>
+<li class="lvl2"><a href="#sec55">8.4. Trazabilidad de los requerimientos no funcionales</a></li>
+<li class="lvl2"><a href="#sec56">8.5. Casos de uso (CU-01…CU-16)</a></li>
+<li class="lvl2"><a href="#sec57">8.6. Reglas de negocio (RN-01…RN-12)</a></li>
+<li class="lvl2"><a href="#sec58">8.7. Verificación de cobertura y huecos</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec59">09 · Necesidades de seguridad de la información</a>
+<ul>
+<li class="lvl2"><a href="#sec60">9.1. Importancia para el negocio</a></li>
+<li class="lvl2"><a href="#sec61">9.2. Activos a proteger</a></li>
+<li class="lvl2"><a href="#sec62">9.3. Amenazas y riesgos</a></li>
+<li class="lvl2"><a href="#sec63">9.4. Controles iniciales propuestos</a></li>
+<li class="lvl2"><a href="#sec64">9.5. Estándares y buenas prácticas de referencia</a></li>
+<li class="lvl2"><a href="#sec65">9.6. Relación con los requerimientos</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec66">10 · Impacto ético y profesional</a>
+<ul>
+<li class="lvl2"><a href="#sec67">10.1. Marco de referencia</a></li>
+<li class="lvl2"><a href="#sec68">10.2. Privacidad y minimización de datos</a></li>
+<li class="lvl2"><a href="#sec69">10.3. Acceso y mínimo privilegio</a></li>
+<li class="lvl2"><a href="#sec70">10.4. Responsabilidad y trazabilidad</a></li>
+<li class="lvl2"><a href="#sec71">10.5. Tratamiento y uso correcto de los datos</a></li>
+<li class="lvl2"><a href="#sec72">10.6. Impacto ético y profesional de cada medida</a></li>
+<li class="lvl2"><a href="#sec73">10.7. Impacto en las personas y en el negocio</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec74">11 · Conclusiones</a>
+<ul>
+<li class="lvl2"><a href="#sec75">11.1. Qué se logró</a></li>
+<li class="lvl2"><a href="#sec76">11.2. Decisiones clave y su fundamento</a></li>
+<li class="lvl2"><a href="#sec77">11.3. Cumplimiento de la rúbrica</a></li>
+<li class="lvl2"><a href="#sec78">11.4. Límites y supuestos abiertos</a></li>
+<li class="lvl2"><a href="#sec79">11.5. Trabajo futuro inmediato</a></li>
+<li class="lvl2"><a href="#sec80">11.6. Cierre</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec81">12 · Bibliografía</a>
+<ul>
+<li class="lvl2"><a href="#sec82">12.1. Fuentes del proyecto</a></li>
+<li class="lvl2"><a href="#sec83">12.2. Estándares, marcos y buenas prácticas</a></li>
+<li class="lvl2"><a href="#sec84">12.3. Ingeniería de software (métodos de análisis y especificación)</a></li>
+<li class="lvl2"><a href="#sec85">12.4. Normativa chilena de protección de datos</a></li>
+</ul></li>
+<li class="lvl1"><a href="#sec86">13 · Anexos</a>
+<ul>
+<li class="lvl2"><a href="#sec87">Anexo A · Glosario</a></li>
+<li class="lvl2"><a href="#sec88">Anexo B · Convenciones de identificadores</a></li>
+<li class="lvl2"><a href="#sec89">Anexo C · Cobertura detallada de la rúbrica</a></li>
+<li class="lvl2"><a href="#sec90">Anexo D · Correcciones docentes aplicadas (C-01…C-08)</a></li>
+<li class="lvl2"><a href="#sec91">Anexo E · Supuestos y validaciones pendientes</a></li>
+<li class="lvl2"><a href="#sec92">Anexo F · Sobre este informe</a></li>
+</ul></li>
+</ul>
+<p style="margin-top:22px;font-size:9.5pt;color:#555">
+  Documento autocontenido. Los diagramas se renderizan con Mermaid; para verlos, abra el archivo con conexión a Internet.
+  El botón «Imprimir / PDF» usa el diálogo del navegador.
+</p>
+</div>
+
+<div class="page">
+<section class="doc">
+<h1 id="sec1">ES1 — Diagnóstico del problema informático</h1>
+<h2 id="sec2">Plataforma web de monitoreo y gestión de cultivos aeropónico · AquaPlants / AquaBrain</h2>
+<p><strong>Informe académico de diagnóstico</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Institución</strong></td>
+<td>INACAP</td>
+</tr>
+<tr>
+<td><strong>Asignatura</strong></td>
+<td>Proyecto Integrado — 4.º semestre</td>
+</tr>
+<tr>
+<td><strong>Evaluación</strong></td>
+<td>ES1 — Diagnóstico del problema informático (Unidad 1)</td>
+</tr>
+<tr>
+<td><strong>Proyecto</strong></td>
+<td>Sistema de Control y Monitoreo para AquaPlants / AquaBrain</td>
+</tr>
+<tr>
+<td><strong>Equipo</strong></td>
+<td>Benjamín Alfonso Espinoza Gangas · Luis Humberto Pizarro Muñoz · Rodrigo Andrés Terraza Herrera</td>
+</tr>
+<tr>
+<td><strong>Docente</strong></td>
+<td>Armin Vladimir Brunt Ruth</td>
+</tr>
+<tr>
+<td><strong>Contraparte</strong></td>
+<td>AquaPlants / AquaBrain (Robotic Systems)</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>2026-10-16</td>
+</tr>
+<tr>
+<td><strong>Versión</strong></td>
+<td>2.0 — incorpora las correcciones <code>correcion 1eval1</code> y <code>correcion 2eval1</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="sec3">Resumen ejecutivo</h2>
+<p>AquaPlants produce cultivos hidropónicos/aeropónicos verticales e integra sensores, electrónica
+(la placa <strong>AquaBrain</strong>), conectividad, software y datos. Hoy la información del cultivo queda
+<strong>dispersa</strong>: solo es visible en el display local del dispositivo o en una aplicación móvil, sin un
+punto único de consulta, sin histórico centralizado y sin avisos automáticos cuando una variable
+sale de rango. Este diagnóstico traduce ese contexto —entregado por la empresa y descrito en el
+documento del desafío— en decisiones de ingeniería verificables.</p>
+<p>El equipo analizó el ecosistema y a sus actores, identificó <strong>9 necesidades TI (NEC-01…NEC-09)</strong> y
+las priorizó con la técnica <strong>MoSCoW</strong> sobre cuatro criterios (valor para el negocio, urgencia,
+riesgo de no atenderlas y factibilidad técnica). A partir de ellas redactó <strong>11 historias de usuario
+(HU01…HU11)</strong> en formato rol–característica–razón, cada una con criterios de aceptación numerados y
+verificables; derivó <strong>15 requerimientos funcionales (RF01…RF15)</strong> y <strong>11 no funcionales
+(RNF01…RNF11)</strong>; y documentó <strong>16 casos de uso (CU-01…CU-16)</strong> y <strong>12 reglas de negocio (RN-01…RN-12)</strong>.</p>
+<p>Para el proceso de desarrollo se compararon tres metodologías con criterios y puntajes homogéneos
+(escala 1–5): <strong>Scrum 27</strong>, Scrumban 25 y Kanban 22. Se seleccionó <strong>Scrum con iteraciones de dos
+semanas</strong>, por su equilibrio entre trazabilidad, entregables demostrables por iteración y adecuación
+a un equipo pequeño que enfrenta incertidumbre técnica (integración con firmware y una app móvil
+existentes). El informe cierra con el análisis de seguridad (activos, amenazas, riesgos y controles
+iniciales) y su impacto ético y profesional, con referencia a la normativa chilena de protección de
+datos y a buenas prácticas de la industria.</p>
+<p><strong>Fuera de alcance por ahora (declarado):</strong> la escalabilidad masiva (cientos o miles de equipos), la
+autonomía local del dispositivo —que depende del firmware— y el licenciamiento por cliente. No se
+inventan cifras ni resultados: lo que no se ejecutó se declara como tal.</p>
+<blockquote>
+<p><strong>Trazabilidad.</strong> Este informe es el artefacto de diagnóstico (ES1). La cadena
+necesidad → historia → requisito → caso de uso → diseño → implementación → prueba se mantiene
+<strong>viva</strong> durante todo el semestre, tal como lo pide el desafío; la versión consolidada de esa
+matriz se presenta en el capítulo 08, con referencias al diseño (ES2) y a la implementación y
+pruebas (ES3).</p>
+</blockquote>
+<hr>
+<h2 id="sec4">Cómo este informe cubre la rúbrica</h2>
+<p>Cada indicador de la evaluación ES1 se aborda en un capítulo específico de este informe:</p>
+<table>
+<thead>
+<tr>
+<th>Indicador de la rúbrica</th>
+<th>Dónde se evidencia</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.1.1.1 · Identifica necesidades TI con buenas prácticas</td>
+<td>Cap. 03 (§3.2, §3.3)</td>
+</tr>
+<tr>
+<td>1.1.1.2 · Reconoce tendencias TI aplicables y su impacto</td>
+<td>Cap. 04</td>
+</tr>
+<tr>
+<td>1.1.1.3 · Prioriza las necesidades justificadamente</td>
+<td>Cap. 03 (§3.3)</td>
+</tr>
+<tr>
+<td>1.1.2.4 · Redacta historias de usuario claras y detalladas</td>
+<td>Cap. 06 (§6.2)</td>
+</tr>
+<tr>
+<td>1.1.2.5 · Incluye roles, objetivos y criterios de aceptación</td>
+<td>Cap. 06 (§6.2)</td>
+</tr>
+<tr>
+<td>1.1.2.6 · Adapta las historias al negocio y a los usuarios finales</td>
+<td>Cap. 06 (§6.3)</td>
+</tr>
+<tr>
+<td>1.1.3.7 · Clasifica RF y RNF con precisión</td>
+<td>Cap. 07 (§7.2, §7.3)</td>
+</tr>
+<tr>
+<td>1.1.3.8 · Ejemplos claros de cada tipo de requerimiento</td>
+<td>Cap. 07 (§7.4)</td>
+</tr>
+<tr>
+<td>1.1.3.9 · Relaciona requerimientos y necesidades del negocio</td>
+<td>Cap. 08 (§8.2)</td>
+</tr>
+<tr>
+<td>1.1.4.10 · Selecciona y explica la metodología</td>
+<td>Cap. 05 (§5.5)</td>
+</tr>
+<tr>
+<td>1.1.4.11 · Justifica la metodología según cliente y problemática</td>
+<td>Cap. 05 (§5.5)</td>
+</tr>
+<tr>
+<td>1.1.4.12 · Compara metodologías alternativas y descarta</td>
+<td>Cap. 05 (§5.2–§5.4)</td>
+</tr>
+<tr>
+<td>1.1.5.13 · Necesidades de seguridad TI e importancia</td>
+<td>Cap. 09</td>
+</tr>
+<tr>
+<td>1.1.5.14 · Impacto ético y profesional de la seguridad</td>
+<td>Cap. 10</td>
+</tr>
+<tr>
+<td>1.1.5.15 · Responde preguntas y justifica decisiones</td>
+<td>Cap. 08, 11 y Anexo C</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="sec5">Índice</h2>
+<ul>
+<li><strong>00</strong> Portada y resumen ejecutivo</li>
+<li><strong>01</strong> Introducción, contexto y alcance del diagnóstico</li>
+<li><strong>02</strong> Caracterización del ecosistema y de los actores</li>
+<li><strong>03</strong> Matriz de necesidades TI y priorización</li>
+<li><strong>04</strong> Tendencias de TI aplicables</li>
+<li><strong>05</strong> Metodología de desarrollo</li>
+<li><strong>06</strong> Historias de usuario (backlog inicial)</li>
+<li><strong>07</strong> Catálogo de requerimientos funcionales y no funcionales</li>
+<li><strong>08</strong> Trazabilidad y relaciones entre artefactos</li>
+<li><strong>09</strong> Necesidades de seguridad de la información</li>
+<li><strong>10</strong> Impacto ético y profesional</li>
+<li><strong>11</strong> Conclusiones</li>
+<li><strong>12</strong> Bibliografía</li>
+<li><strong>13</strong> Anexos</li>
+</ul>
+<hr>
+<h2 id="sec6">Nota metodológica y de honestidad intelectual</h2>
+<ol>
+<li><strong>Fuente del levantamiento.</strong> El diagnóstico se construyó a partir del <strong>análisis documental</strong> del
+documento del desafío, de los <strong>antecedentes base entregados por la empresa</strong> y del <strong>material
+técnico</strong> (firmware del ESP32-S3, sensores y app Android de prueba). No se realizaron entrevistas
+formales con la contraparte durante ES1; por eso los aspectos operativos que no pudieron
+confirmarse quedaron registrados explícitamente como <strong>supuestos a validar</strong> (cap. 01 §1.6).</li>
+<li><strong>Sin datos inventados.</strong> Las variables que el hardware real no mide (por ejemplo pH o caudal) se
+declaran como <strong>simuladas</strong>; no se atribuyen lecturas reales a sensores que no existen.</li>
+<li><strong>Correcciones del docente aplicadas.</strong> Este informe corresponde a la <strong>versión corregida</strong> del
+catálogo ES1; las observaciones de la Evaluación 1 y su tratamiento se documentan en el cap. 13
+(Anexo D) y en <code>docs/ES1/01-correcciones-aplicadas.md</code>.</li>
+<li><strong>Artefactos canónicos.</strong> El catálogo de identificadores (NEC, HU, RF, RNF, CU, RN) y su fuente de
+verdad están en <code>docs/ES1/00-backlog-base.md</code>. Este informe es su presentación académica y no
+redefine identificadores.</li>
+</ol>
+
+</section>
+<section class="doc">
+<h1 id="sec7">01 · Introducción, contexto y alcance del diagnóstico</h1>
+<h2 id="sec8">1.1. Contexto de la empresa y del desafío</h2>
+<p><strong>AquaPlants</strong> es un sistema de producción de cultivos <strong>hidropónicos y aeropónicos verticales</strong>.
+No es solo una estructura de cultivo: integra, en una misma solución, el producto físico, la
+electrónica de sensado y comunicación, y una capa digital de monitoreo y gestión. El elemento
+electrónico central es la placa <strong>AquaBrain</strong>, que actúa como <strong>punto de encuentro entre el sistema
+físico y la capa digital</strong>: recibe señales de los sensores y puede enviar información a la nube.</p>
+<p>El desafío entregado por la empresa pide <strong>construir una plataforma web</strong> que centralice la
+información del cultivo, muestre el estado actual y los históricos, genere alertas automáticas ante
+valores fuera de rango y controle el acceso mediante autenticación y roles. El foco es <strong>software</strong>:
+no es obligatorio fabricar ni programar la electrónica, y el origen de los datos puede ser un
+<strong>simulador</strong> o el propio firmware real. En palabras del documento del desafío:</p>
+<blockquote>
+<p>«El desafío se centra en software y no en la fabricación del hardware. […] La solución debe
+enfocarse en frontend, backend/API, base de datos y nube.»</p>
+</blockquote>
+<p>La empresa aporta <strong>antecedentes reales</strong> que condicionan el diseño: un firmware sobre <strong>ESP32-S3</strong>
+que ya sensa variables (temperatura y humedad con <strong>AHT10</strong>; distancia —usada como referencia de
+nivel— con <strong>HC-SR04</strong>), un display <strong>OLED SSD1309</strong> con <strong>joystick</strong> para operación local, y una
+<strong>app Android de prueba</strong> ya construida que se conecta al dispositivo. Estos antecedentes no son
+decorativos: obligan a que la plataforma web <strong>conviva</strong> con clientes que ya existen.</p>
+<h2 id="sec9">1.2. Situación problemática (diagnóstico)</h2>
+<p>Del análisis del contexto se desprende que el problema no es la falta de datos, sino su
+<strong>dispersión y falta de explotación</strong>. Los síntomas observados son:</p>
+<ol>
+<li><strong>Información dispersa.</strong> Los datos de instalaciones, cultivos, dispositivos y sensores solo son
+visibles en el display local del AquaBrain o en la app móvil; no existe un punto único de
+consulta ni una base de datos consistente.</li>
+<li><strong>Estado actual no accesible.</strong> El encargado debe inspeccionar físicamente el sistema para
+conocer las variables del cultivo, lo que retrasa decisiones de riego y nutrición.</li>
+<li><strong>Ausencia de avisos automáticos.</strong> No hay un mecanismo que avise cuando una variable sale de
+rango, con el consiguiente riesgo de pérdida de cultivo.</li>
+<li><strong>Acceso no controlado.</strong> La información no está protegida por autenticación ni por roles, lo que
+expone datos operativos y de usuarios.</li>
+<li><strong>Conectividad intermitente.</strong> En terreno puede perderse la conexión; sin almacenamiento local y
+sincronización posterior, se pierden mediciones.</li>
+<li><strong>Sin visión de conjunto.</strong> El supervisor no dispone de herramientas para comparar sistemas ni
+analizar tendencias.</li>
+<li><strong>Crecimiento no previsto.</strong> La combinación de firmware y app aislada no está pensada para
+escalar de pocos equipos a cientos o miles.</li>
+</ol>
+<h2 id="sec10">1.3. Objetivo general y objetivos específicos</h2>
+<p><strong>Objetivo general.</strong> Comprender el problema informático de AquaPlants/AquaBrain y traducirlo en un
+diagnóstico trazable —necesidades, historias de usuario, requerimientos, metodología y seguridad—
+que sirva de base verificable para el diseño (ES2), la implementación (ES3) y el cierre (ES4).</p>
+<p><strong>Objetivos específicos.</strong></p>
+<ol>
+<li>Identificar y priorizar las necesidades TI del negocio (MoSCoW sobre valor, urgencia, riesgo y
+factibilidad).</li>
+<li>Reconocer las tendencias TI aplicables y descartar las que no aportan valor al contexto.</li>
+<li>Redactar un backlog inicial de historias de usuario con criterios de aceptación verificables.</li>
+<li>Clasificar los requerimientos funcionales y no funcionales y relacionarlos con las necesidades.</li>
+<li>Seleccionar y justificar una metodología de desarrollo comparándola con alternativas.</li>
+<li>Identificar las necesidades de seguridad y analizar su impacto ético y profesional.</li>
+<li>Establecer una matriz de trazabilidad que conecte cada necesidad con su evidencia final.</li>
+</ol>
+<h2 id="sec11">1.4. Alcance del diagnóstico</h2>
+<p><strong>Incluido en este diagnóstico.</strong></p>
+<ul>
+<li>Caracterización del ecosistema y de los actores (humanos y máquina).</li>
+<li>Necesidades TI priorizadas y su evidencia.</li>
+<li>Análisis de tendencias, metodología, historias de usuario, requerimientos y casos de uso.</li>
+<li>Seguridad inicial (activos, amenazas, riesgos y controles) y análisis ético.</li>
+<li>Matriz de trazabilidad hacia el diseño, la implementación y las pruebas.</li>
+</ul>
+<p><strong>Excluido del diagnóstico (corresponde a etapas posteriores o queda fuera de alcance).</strong></p>
+<ul>
+<li>El diseño detallado (arquitectura 4+1, modelo de datos físico, wireframes): <strong>ES2</strong>.</li>
+<li>La implementación y la ejecución de pruebas: <strong>ES3</strong>.</li>
+<li>La fabricación o programación del hardware: <strong>fuera del desafío</strong>.</li>
+<li>La escalabilidad masiva real, la autonomía local del firmware y el licenciamiento: <strong>declaradas
+como fuera de alcance por ahora</strong> (ver cap. 03 §3.4).</li>
+</ul>
+<h2 id="sec12">1.5. Enfoque y fuentes del levantamiento</h2>
+<p>El levantamiento se realizó por <strong>análisis documental</strong> del material entregado por la empresa y del
+instrumento de evaluación. Las fuentes utilizadas son:</p>
+<table>
+<thead>
+<tr>
+<th>Fuente</th>
+<th>Tipo</th>
+<th>Aporte al diagnóstico</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Documento del desafío (AquaPlants rev. 1)</td>
+<td>Especificación de la empresa</td>
+<td>Contexto, actores, dominio, MVP, restricciones, escala y reglas operacionales</td>
+</tr>
+<tr>
+<td>Antecedentes base entregados por la empresa</td>
+<td>Especificación de la empresa</td>
+<td>Ecosistema, variables, reglas operacionales y estructura de datos sugerida</td>
+</tr>
+<tr>
+<td>Material técnico y datasets (Robotic Systems)</td>
+<td>Insumo técnico</td>
+<td>Existencia de firmware (ESP32-S3), sensores (AHT10, HC-SR04) y app Android de prueba</td>
+</tr>
+<tr>
+<td>Instrumento de evaluación ES1 y su rúbrica</td>
+<td>Marco académico</td>
+<td>Indicadores exigidos y criterio de calidad (trazabilidad)</td>
+</tr>
+<tr>
+<td>Correcciones <code>correcion 1eval1</code> y <code>correcion 2eval1</code></td>
+<td>Retroalimentación docente</td>
+<td>Ajustes aplicados (MoSCoW, comparación de metodologías, ética, unificación de códigos)</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Método.</strong> Se identificaron los actores y el flujo dispositivo → dato → aplicación; se levantaron
+las necesidades por actor; se redactaron historias y criterios de aceptación; se clasificaron los
+requerimientos; y se priorizó con MoSCoW. Todo el material se mantiene con <strong>identificadores
+únicos y estables</strong> para permitir la trazabilidad.</p>
+</blockquote>
+<h2 id="sec13">1.6. Supuestos y validaciones pendientes con la contraparte</h2>
+<p>El desafío enumera explícitamente los aspectos que el equipo debe <strong>validar con la contraparte</strong>. Al
+no haberse realizado entrevistas formales durante ES1, estos puntos se registran como <strong>supuestos a
+validar</strong> y no como hechos:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Aspecto a validar</th>
+<th>Tratamiento provisional</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Qué variables y sensores priorizar en el prototipo</td>
+<td>Se priorizan las reales (temperatura, humedad, nivel); pH y caudal como simulados</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Frecuencia deseada de envío de mediciones</td>
+<td>Se asume un intervalo configurable por dispositivo</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Rangos/umbrales que originan una alerta</td>
+<td>Configurables por el administrador (reglas), no fijados en código</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Qué información debe mostrar primero el dashboard</td>
+<td>Estado actual por sensor y sistema, luego alertas recientes</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Relación operativa sistema ↔ cultivo ↔ planta ↔ dispositivo ↔ sensor</td>
+<td>Modelada como jerarquía; su forma exacta es un supuesto</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Tiempo de conservación de los históricos</td>
+<td>Se documenta como parámetro de política de datos</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Comportamiento cuando un dispositivo deja de reportar</td>
+<td>Se marca &quot;sin comunicación&quot; tras superar un múltiplo de su intervalo</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Qué datos son reales controlados y qué debe permanecer simulado</td>
+<td>Real: AHT10/HC-SR04. Simulado: variables sin sensor físico</td>
+</tr>
+</tbody></table>
+<p>Estos supuestos heredan a ES2 (<code>docs/ES2/09-feedback-prototipo.md</code>, <code>SUP-01…SUP-10</code>) y deben cerrarse
+con la contraparte.</p>
+<h2 id="sec14">1.7. Estructura del informe</h2>
+<p>El capítulo <strong>02</strong> caracteriza el ecosistema y los actores; el <strong>03</strong> presenta la matriz de
+necesidades y su priorización; el <strong>04</strong> analiza las tendencias TI; el <strong>05</strong> justifica la
+metodología; los capítulos <strong>06</strong> y <strong>07</strong> contienen las historias de usuario y el catálogo de
+requerimientos; el <strong>08</strong> establece la trazabilidad; y los capítulos <strong>09</strong> y <strong>10</strong> abordan la
+seguridad y su impacto ético y profesional. Cierran el <strong>11</strong> (conclusiones), <strong>12</strong> (bibliografía) y
+<strong>13</strong> (anexos).</p>
+
+</section>
+<section class="doc">
+<h1 id="sec15">02 · Caracterización del ecosistema y de los actores</h1>
+<h2 id="sec16">2.1. El ecosistema físico-digital</h2>
+<p>El ecosistema de AquaPlants se organiza en <strong>tres capas</strong> que el desafío pide comprender antes de
+construir software:</p>
+<table>
+<thead>
+<tr>
+<th>Capa</th>
+<th>Elementos</th>
+<th>Rol en el ecosistema</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Física / de cultivo</strong></td>
+<td>Torre hidropónica vertical, plantas, solución nutritiva</td>
+<td>El objeto monitoreado; su estado depende de variables medibles</td>
+</tr>
+<tr>
+<td><strong>Electrónica / AquaBrain</strong></td>
+<td>Placa con <strong>ESP32-S3</strong>, sensores <strong>AHT10</strong> y <strong>HC-SR04</strong>, display <strong>OLED SSD1309</strong> y <strong>joystick</strong></td>
+<td>Sensa variables, permite operación local y transmite datos hacia la nube</td>
+</tr>
+<tr>
+<td><strong>Digital</strong></td>
+<td>Plataforma web (frontend + API + base de datos) y <strong>app Android de prueba</strong></td>
+<td>Centraliza, persiste, visualiza y alerta sobre los datos del cultivo</td>
+</tr>
+</tbody></table>
+<p>Comprender estas capas permite traducir el contexto físico en decisiones de software: qué se mide,
+con qué frecuencia, cómo se comunica y quién consume la información.</p>
+<h2 id="sec17">2.2. Hardware y clientes reales entregados por la empresa</h2>
+<p>La empresa no parte de cero: existe hardware y software que la plataforma debe respetar. Cada
+elemento tiene una <strong>implicancia directa de software</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Antecedente</th>
+<th>Implicancia de software</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ESP32-S3</strong> (firmware propio)</td>
+<td>Dispositivo AquaBrain real que sensa y transmite</td>
+<td>La API debe recibir el <strong>formato del firmware real</strong>, no solo el del simulador</td>
+</tr>
+<tr>
+<td><strong>AHT10</strong></td>
+<td>Mide temperatura y humedad</td>
+<td>Tipos de variable reales <code>TEMPERATURA</code> (°C) y <code>HUMEDAD</code> (%)</td>
+</tr>
+<tr>
+<td><strong>HC-SR04</strong></td>
+<td>Mide distancia, usada como referencia de nivel</td>
+<td>Tipo de variable <code>DISTANCIA</code>/<code>NIVEL</code> (cm)</td>
+</tr>
+<tr>
+<td><strong>OLED SSD1309 + joystick</strong></td>
+<td>Operación local autónoma del dispositivo</td>
+<td>La plataforma debe tolerar cortes y ser <strong>consistente</strong> con lo que muestra el display</td>
+</tr>
+<tr>
+<td><strong>App Android 14 (prueba)</strong></td>
+<td>Cliente ya construido que se conecta al dispositivo</td>
+<td>API-first versionada y documentada para <strong>no duplicar lógica ni romper clientes</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Consecuencia de diseño: la plataforma <strong>no es el único cliente</strong>. Debe exponer un contrato estable
+para que firmware y app móvil convivan, y no puede contradecir la información que el usuario ve en
+el display local.</p>
+</blockquote>
+<h2 id="sec18">2.3. Variables de cultivo: reales y simuladas</h2>
+<p>El documento del desafío menciona variables como <strong>nutrientes, caudal, consumo hídrico y
+fotoperiodo</strong>, además de las de los sensores reales. Como el hardware entregado solo cubre
+temperatura, humedad y distancia, la distinción entre <strong>real</strong> y <strong>simulado</strong> es parte del
+diagnóstico y evita atribuir al sistema datos que no puede producir:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Origen en el prototipo</th>
+<th>Fundamento</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Temperatura (°C)</td>
+<td><strong>Real</strong> (AHT10)</td>
+<td>Sensor entregado por la empresa</td>
+</tr>
+<tr>
+<td>Humedad (%)</td>
+<td><strong>Real</strong> (AHT10)</td>
+<td>Sensor entregado por la empresa</td>
+</tr>
+<tr>
+<td>Distancia / nivel (cm)</td>
+<td><strong>Real</strong> (HC-SR04)</td>
+<td>Sensor entregado por la empresa</td>
+</tr>
+<tr>
+<td>pH</td>
+<td><strong>Simulado</strong></td>
+<td>Mencionado en el desafío; sin sensor físico disponible</td>
+</tr>
+<tr>
+<td>Caudal (L/min)</td>
+<td><strong>Simulado</strong></td>
+<td>Mencionado en el desafío; sin sensor físico disponible</td>
+</tr>
+<tr>
+<td>Nutrientes / fotoperiodo</td>
+<td><strong>Simulado / conceptual</strong></td>
+<td>Mencionados en el desafío; se modelan como tipo de variable</td>
+</tr>
+</tbody></table>
+<p>Esta separación es coherente con el criterio del desafío: <em>«Los sensores reales no son
+obligatorios: una API o simulador puede generar mediciones»</em>, y con el compromiso de <strong>no inventar</strong>
+mediciones reales donde no hay sensor.</p>
+<h2 id="sec19">2.4. Flujo dispositivo → dato → aplicación</h2>
+<p>El desafío pide demostrar que el equipo entiende el flujo completo (medición simulada → API →
+almacenamiento → dashboard/alerta). El siguiente diagrama resume ese flujo, incluido el camino de
+sincronización posterior a un corte de red:</p>
+
+<pre class="mermaid">flowchart LR
+    subgraph Campo[AquaBrain / campo]
+        S[Sensores AHT10 y HC-SR04] --&gt; M[ESP32-S3 firmware]
+        M --&gt; OLED[Display OLED + joystick]
+        M --&gt;|sin red| BUF[Buffer local]
+    end
+    subgraph Sim[Simulador IoT]
+        SIM[Generador de mediciones]
+    end
+    BUF --&gt;|reintento al reconectar| API
+    M --&gt;|POST medición| API
+    SIM --&gt;|POST medición| API
+    API[API de ingesta REST] --&gt; VAL{Validación}
+    VAL --&gt;|válida| DB[(Base de datos)]
+    VAL --&gt;|inválida| ERR[400 / 404 / 401]
+    DB --&gt; MOTOR[Motor de reglas y alertas]
+    MOTOR --&gt; AL[(Alertas)]
+    DB --&gt; DASH[Dashboard web]
+    AL --&gt; DASH
+    DASH --&gt; U[Encargado / Supervisor]
+    DB --&gt; HIST[Históricos y comparativas]
+    HIST --&gt; SUP[Supervisor]</pre>
+
+<p>El diagrama distingue los <strong>dos orígenes de datos</strong> (firmware real y simulador), el <strong>punto único de
+validación y persistencia</strong>, el <strong>motor de reglas</strong> que convierte datos en alertas, y los <strong>actores
+que consumen</strong> la información. La existencia del buffer local y del reintento responde a la regla
+operacional de conectividad intermitente.</p>
+<h2 id="sec20">2.5. Actores y sus necesidades</h2>
+<p>Los actores surgen de los antecedentes de la empresa y del propio desafío:</p>
+<table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>Necesidad inicial</th>
+<th>Tipo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Encargado de cultivo</strong></td>
+<td>Ver estado actual, históricos y alertas; operar el cultivo</td>
+<td>Humano</td>
+</tr>
+<tr>
+<td><strong>Supervisor</strong></td>
+<td>Comparar sistemas, analizar tendencias e indicadores</td>
+<td>Humano</td>
+</tr>
+<tr>
+<td><strong>Administrador</strong></td>
+<td>Gestionar usuarios, roles, sistemas, dispositivos, sensores y reglas</td>
+<td>Humano</td>
+</tr>
+<tr>
+<td><strong>Dispositivo / AquaBrain (ESP32-S3)</strong></td>
+<td>Enviar mediciones por API y operar localmente sin conectividad</td>
+<td>Máquina</td>
+</tr>
+<tr>
+<td><strong>Simulador IoT</strong></td>
+<td>Generar mediciones en ausencia de hardware</td>
+<td>Máquina</td>
+</tr>
+<tr>
+<td><strong>Desarrollador de integraciones</strong></td>
+<td>Consumir la API documentada (app Android, firmware, futuros clientes)</td>
+<td>Humano/técnico</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>A diferencia de un backlog genérico, se reconoce explícitamente a <strong>la máquina como actor</strong>: el
+dispositivo y el simulador tienen necesidades propias (enviar datos, reintentar, sincronizar) que
+se traducen en historias de usuario y requerimientos.</p>
+</blockquote>
+<h2 id="sec21">2.6. Puente hacia las necesidades TI</h2>
+<p>La caracterización anterior es la base del capítulo siguiente: cada capa y cada actor produce una o
+más <strong>necesidades TI</strong> con evidencia concreta. Por ejemplo, del display OLED y del joystick nace la
+necesidad de <strong>operación local tolerante a cortes</strong>; de la app Android, la necesidad de una <strong>API
+documentada y versionada</strong>; del HC-SR04, un <strong>tipo de variable real</strong> que la base de datos debe
+soportar. Así, el diagnóstico no se apoya en supuestos genéricos, sino en el material entregado.</p>
+
+</section>
+<section class="doc">
+<h1 id="sec22">03 · Matriz de necesidades TI y priorización</h1>
+<h2 id="sec23">3.1. Método de identificación</h2>
+<p>Cada necesidad TI se formuló a partir de un <strong>problema observado</strong> en el material entregado, se
+asoció a una <strong>necesidad tecnológica concreta</strong> y se respaldó con una <strong>evidencia</strong> verificable
+(documento del desafío, antecedentes de la empresa, firmware o app existentes). Se usó un
+identificador estable <code>NEC-01…NEC-09</code>.</p>
+<p>La priorización se hizo con la técnica <strong>MoSCoW</strong> (Must / Should / Could / Won&#39;t), evaluando cuatro
+criterios de forma conjunta:</p>
+<ul>
+<li><strong>Valor para el negocio</strong> — cuánto aporta al resultado del cultivo y a la operación.</li>
+<li><strong>Urgencia</strong> — cuán pronto se necesita para que el sistema sea útil.</li>
+<li><strong>Riesgo de no atenderla</strong> — qué ocurre si no se resuelve (operativo, de datos o de seguridad).</li>
+<li><strong>Factibilidad técnica</strong> — si es alcanzable en el prototipo académico con los recursos actuales.</li>
+</ul>
+<h2 id="sec24">3.2. Matriz de necesidades TI (NEC-01…NEC-09)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Problema observado</th>
+<th>Necesidad TI</th>
+<th>MoSCoW</th>
+<th>Evidencia</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>NEC-01</strong></td>
+<td>Datos de instalaciones, cultivos, dispositivos y sensores dispersos; visibles solo en el display local o la app</td>
+<td>Centralizar la información en una plataforma web única con base de datos consistente</td>
+<td><strong>Must</strong></td>
+<td>Documento del desafío; diagrama de flujo de datos</td>
+</tr>
+<tr>
+<td><strong>NEC-02</strong></td>
+<td>El encargado no conoce el estado actual sin inspeccionar físicamente el sistema</td>
+<td>Dashboard web con el estado actual (última medición) por sensor y por sistema</td>
+<td><strong>Must</strong></td>
+<td>Antecedentes de actores</td>
+</tr>
+<tr>
+<td><strong>NEC-03</strong></td>
+<td>No existe aviso automático cuando una variable sale de rango</td>
+<td>Motor de reglas/umbrales que genere alertas al recibir una medición fuera de rango</td>
+<td><strong>Should</strong></td>
+<td>Sección &quot;Información de dominio sugerida&quot;</td>
+</tr>
+<tr>
+<td><strong>NEC-04</strong></td>
+<td>El firmware del ESP32-S3 ya genera datos reales (AHT10, HC-SR04) que solo se ven en el OLED</td>
+<td>API de ingesta que reciba y valide mediciones del firmware real, además del simulador</td>
+<td><strong>Must</strong></td>
+<td>Firmware; especificaciones AHT10 y HC-SR04</td>
+</tr>
+<tr>
+<td><strong>NEC-05</strong></td>
+<td>Existe una app Android de prueba que puede convertirse en un silo independiente</td>
+<td>API-first documentada y versionada que integre la app Android y futuros clientes</td>
+<td><strong>Should</strong></td>
+<td>App Android AquaBrain de prueba</td>
+</tr>
+<tr>
+<td><strong>NEC-06</strong></td>
+<td>El AquaBrain opera localmente con OLED y joystick; debe seguir siendo útil sin Internet</td>
+<td>Tolerar pérdidas temporales de conectividad con reintentos y sincronización posterior</td>
+<td><strong>Could</strong></td>
+<td>Hardware entregado; documento de contexto</td>
+</tr>
+<tr>
+<td><strong>NEC-07</strong></td>
+<td>El acceso a la información no está controlado</td>
+<td>Autenticación robusta (JWT) y control de acceso por roles (RBAC)</td>
+<td><strong>Must</strong></td>
+<td>Actores del desafío</td>
+</tr>
+<tr>
+<td><strong>NEC-08</strong></td>
+<td>El supervisor no puede comparar sistemas ni analizar tendencias</td>
+<td>Módulo de históricos con gráficos y comparación entre múltiples sistemas</td>
+<td><strong>Could</strong></td>
+<td>Antecedentes de actores (&quot;Supervisor&quot;)</td>
+</tr>
+<tr>
+<td><strong>NEC-09</strong></td>
+<td>La combinación firmware + app aislada no está pensada para escalar a cientos o miles de equipos</td>
+<td>Diseño escalable (índices, normalización, estrategia de particionamiento) documentado</td>
+<td><strong>Won&#39;t (por ahora)</strong></td>
+<td>Sección &quot;Escala esperada&quot; del desafío</td>
+</tr>
+</tbody></table>
+<p><strong>Distribución MoSCoW de las necesidades:</strong> 4 Must (NEC-01, NEC-02, NEC-04, NEC-07), 2 Should
+(NEC-03, NEC-05), 2 Could (NEC-06, NEC-08) y 1 Won&#39;t (NEC-09).</p>
+<h2 id="sec25">3.3. Priorización justificada</h2>
+<p>La siguiente tabla explicita la justificación por los cuatro criterios y el resultado MoSCoW. La
+prioridad <strong>no</strong> responde a la preferencia tecnológica del equipo, sino al impacto en el negocio.</p>
+<table>
+<thead>
+<tr>
+<th>Necesidad</th>
+<th>Valor</th>
+<th>Urgencia</th>
+<th>Riesgo de no atenderla</th>
+<th>Factibilidad</th>
+<th>MoSCoW</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Centralizar datos (NEC-01)</td>
+<td>Alto: sin fuente única, nada más funciona</td>
+<td>Inmediata</td>
+<td>Alto: sistema inoperante</td>
+<td>Alta (modelo relacional estándar)</td>
+<td><strong>Must</strong></td>
+</tr>
+<tr>
+<td>API de ingesta real (NEC-04)</td>
+<td>Alto: conecta el hardware que ya existe</td>
+<td>Alta</td>
+<td>Alto: el prototipo se alejaría del producto real</td>
+<td>Alta (REST + validación)</td>
+<td><strong>Must</strong></td>
+</tr>
+<tr>
+<td>Dashboard de estado (NEC-02)</td>
+<td>Alto: es la vista principal del encargado</td>
+<td>Alta</td>
+<td>Alto: no habría monitoreo</td>
+<td>Alta (consulta de última medición)</td>
+<td><strong>Must</strong></td>
+</tr>
+<tr>
+<td>Autenticación y RBAC (NEC-07)</td>
+<td>Alto: protege datos y segrega funciones</td>
+<td>Alta</td>
+<td>Alto: acceso indebido, incumplimiento</td>
+<td>Alta (JWT + hash)</td>
+<td><strong>Must</strong></td>
+</tr>
+<tr>
+<td>Motor de reglas y alertas (NEC-03)</td>
+<td>Medio-alto: previene pérdidas de cultivo</td>
+<td>Media</td>
+<td>Medio: supervisión manual</td>
+<td>Media (depende de mediciones y reglas)</td>
+<td><strong>Should</strong></td>
+</tr>
+<tr>
+<td>API-first documentada (NEC-05)</td>
+<td>Medio: protege la inversión en la app móvil</td>
+<td>Media</td>
+<td>Medio: silos y retrabajo</td>
+<td>Media (OpenAPI/Swagger)</td>
+<td><strong>Should</strong></td>
+</tr>
+<tr>
+<td>Tolerancia a conectividad (NEC-06)</td>
+<td>Medio: evita pérdida de datos en campo</td>
+<td>Media</td>
+<td>Medio: datos faltantes</td>
+<td>Media (buffer + reintentos)</td>
+<td><strong>Could</strong></td>
+</tr>
+<tr>
+<td>Históricos y comparativas (NEC-08)</td>
+<td>Medio: valor estratégico para el supervisor</td>
+<td>Baja</td>
+<td>Bajo: no bloquea el MVP</td>
+<td>Media (agregaciones)</td>
+<td><strong>Could</strong></td>
+</tr>
+<tr>
+<td>Escalabilidad masiva (NEC-09)</td>
+<td>Bajo para el prototipo, alto a futuro</td>
+<td>Baja</td>
+<td>Bajo en el alcance académico</td>
+<td>Baja como implementación real</td>
+<td><strong>Won&#39;t</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Lectura de la priorización.</strong> Las cuatro primeras necesidades son <strong>Must</strong> porque forman el núcleo
+sin el cual el sistema no cumple su propósito: sin datos centralizados no hay plataforma; sin API no
+hay datos; sin dashboard no hay monitoreo; sin autenticación no hay control de acceso. Las
+necesidades <strong>Should</strong> y <strong>Could</strong> agregan valor (alertas, integración, resiliencia, análisis) pero
+pueden planificarse en iteraciones posteriores. La escalabilidad masiva se <strong>documenta</strong> pero no se
+implementa en el alcance académico.</p>
+<h2 id="sec26">3.4. Necesidades no atendidas por ahora (Won&#39;t)</h2>
+<p>Se declaran explícitamente para evitar expectativas falsas; no se consideran fracasos, sino
+<strong>decisiones de alcance</strong> documentadas como trabajo futuro:</p>
+<table>
+<thead>
+<tr>
+<th>Necesidad / requisito</th>
+<th>Motivo de la exclusión</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Escalabilidad masiva real (NEC-09 / RNF04)</td>
+<td>El desafío no exige reproducir la escala de cientos o miles de equipos; se documenta la estrategia</td>
+</tr>
+<tr>
+<td>Autonomía local del dispositivo (RNF09)</td>
+<td>Depende del firmware del ESP32-S3, fuera del alcance de software de la plataforma</td>
+</tr>
+<tr>
+<td>Licenciamiento y suscripciones (HU09 / RF15)</td>
+<td>No está respaldado explícitamente por el desafío; queda como supuesto a validar</td>
+</tr>
+<tr>
+<td>Notificaciones externas (correo/SMS)</td>
+<td>No exigidas por el desafío; se implementan como avisos en la interfaz</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<p><strong>Trazabilidad.</strong> Cada <code>NEC-xx</code> se relaciona con una o más historias de usuario y con
+requerimientos concretos; la cadena completa se presenta en el capítulo 08.</p>
+</blockquote>
+
+</section>
+<section class="doc">
+<h1 id="sec27">04 · Tendencias de TI aplicables</h1>
+<h2 id="sec28">4.1. Criterio de selección: pertinencia, no moda</h2>
+<p>El desafío pide reconocer las tendencias aplicables <strong>sin seleccionar por moda</strong>. Por eso cada
+tendencia se evalúa con una pregunta de pertinencia: <em>¿resuelve un problema real de este proyecto y
+es alcanzable en el prototipo académico?</em> Las tendencias que no responden a una necesidad concreta
+se descartan explícitamente (§4.3), lo que demuestra criterio y no acumulación de tecnología.</p>
+<h2 id="sec29">4.2. Tendencias aplicables y su impacto</h2>
+<table>
+<thead>
+<tr>
+<th>Tendencia</th>
+<th>Aplicación en AquaPlants</th>
+<th>Impacto en el proyecto</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IoT</strong></td>
+<td>El ESP32-S3 con AHT10 y HC-SR04 sensa variables reales y transmite a la nube</td>
+<td>La plataforma debe exponer una <strong>API</strong> capaz de recibir el tráfico del firmware y mostrar el <strong>estado de conexión</strong> del dispositivo</td>
+</tr>
+<tr>
+<td><strong>Edge computing / interfaz local embebida</strong></td>
+<td>El OLED SSD1309 y el joystick permiten operar sin nube</td>
+<td>Requisito de <strong>autonomía local</strong> y sincronización posterior; la web debe tolerar datos tardíos</td>
+</tr>
+<tr>
+<td><strong>API-first / multi-cliente</strong></td>
+<td>La app Android y el dashboard web consumen la misma fuente</td>
+<td><strong>Contratos estables, versionados y documentados</strong> para no romper clientes ya construidos</td>
+</tr>
+<tr>
+<td><strong>Cloud-native / contenedores</strong></td>
+<td>Empaquetar frontend, backend y base de datos</td>
+<td><strong>Reproducibilidad</strong> del entorno y despliegue simple en cualquier nube</td>
+</tr>
+<tr>
+<td><strong>Dashboards en tiempo real</strong></td>
+<td>Actualización por <em>polling</em> o WebSocket del estado</td>
+<td>Mejora la <strong>experiencia del encargado</strong> y la consistencia con el display local</td>
+</tr>
+<tr>
+<td><strong>Seguridad Zero Trust</strong></td>
+<td>Autenticación y validación en cada petición, desde los tres clientes</td>
+<td>No se confía en ningún cliente: <strong>control por rol y por dispositivo</strong> en cada llamada</td>
+</tr>
+<tr>
+<td><strong>Bases de datos relacionales con soporte de series temporales</strong></td>
+<td>PostgreSQL con índices compuestos <code>(sensor_id, timestamp)</code></td>
+<td><strong>Históricos eficientes</strong>; migración futura a una extensión de series temporales si el volumen crece</td>
+</tr>
+</tbody></table>
+<h2 id="sec30">4.3. Tendencias evaluadas y no adoptadas</h2>
+<p>Tan importante como elegir es <strong>justificar el descarte</strong>. Estas tendencias se analizaron y se
+dejaron fuera del alcance del prototipo:</p>
+<table>
+<thead>
+<tr>
+<th>Tendencia</th>
+<th>Por qué se considera</th>
+<th>Por qué no se adopta ahora</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Machine Learning / analítica predictiva</strong></td>
+<td>La estructura de mediciones históricas permitiría predicciones de rendimiento</td>
+<td>El desafío <strong>no exige</strong> IA ni predicción avanzada; incorporarla desviaría el esfuerzo del flujo esencial</td>
+</tr>
+<tr>
+<td><strong>Arquitectura de microservicios</strong></td>
+<td>Escalabilidad independiente por servicio</td>
+<td>Sobredimensionada para un <strong>equipo pequeño</strong> y un alcance acotado; agrega complejidad operativa sin valor inmediato</td>
+</tr>
+<tr>
+<td><strong>Almacenamiento NoSQL como fuente principal</strong></td>
+<td>Manejo de grandes volúmenes y esquemas flexibles</td>
+<td>Los datos del dominio son <strong>altamente relacionales</strong> (sistema → dispositivo → sensor → medición); se prioriza integridad referencial</td>
+</tr>
+<tr>
+<td><strong>Escalabilidad masiva (particionamiento real, réplicas, <em>sharding</em>)</strong></td>
+<td>La empresa proyecta cientos o miles de equipos</td>
+<td>El prototipo <strong>no requiere esa escala</strong>; se documenta la estrategia, no se implementa (NEC-09 / RNF04)</td>
+</tr>
+<tr>
+<td><strong>Blockchain / trazabilidad distribuida</strong></td>
+<td>Narrativa de &quot;trazabilidad&quot;</td>
+<td>No hay requisito de confianza distribuida entre terceros; un <strong>histórico inmutable en base de datos</strong> cubre la necesidad real</td>
+</tr>
+</tbody></table>
+<h2 id="sec31">4.4. Síntesis del impacto en el proyecto</h2>
+<p>El análisis de tendencias converge en cuatro decisiones de arquitectura conceptual que se
+arrastrarán al diseño (ES2):</p>
+<ol>
+<li><strong>La API es el centro del sistema</strong> (<em>API-first</em>): tanto el firmware, como la app Android y el
+dashboard dependen de un contrato único, versionado y documentado.</li>
+<li><strong>El dato es de tipo serie temporal</strong>: la tabla de mediciones crecerá más que cualquier otra y
+exige índices y una estrategia de crecimiento.</li>
+<li><strong>La resiliencia se diseña desde el dispositivo</strong>: como el dispositivo opera sin conexión, la
+plataforma debe aceptar datos tardíos y no perder información.</li>
+<li><strong>La seguridad es transversal</strong>: se aplica a los tres clientes (navegador, móvil, dispositivo),
+no solo a la interfaz web.</li>
+</ol>
+<blockquote>
+<p>Estas tendencias no se adoptan &quot;porque están de moda&quot;: cada una responde a una necesidad
+identificada en el capítulo 03 y a una restricción concreta del material entregado (hardware real,
+app existente, conectividad intermitente y crecimiento proyectado).</p>
+</blockquote>
+
+</section>
+<section class="doc">
+<h1 id="sec32">05 · Metodología de desarrollo</h1>
+<h2 id="sec33">5.1. Criterios de comparación</h2>
+<p>Para seleccionar la metodología no se comparó &quot;por gusto&quot;: se definieron <strong>seis criterios comunes</strong>,
+aplicables a todas las alternativas y evaluados en una <strong>escala homogénea de 1 a 5</strong>, según su
+relevancia para este proyecto:</p>
+<ol>
+<li><strong>Adaptabilidad a cambios</strong> — el alcance tiene incógnitas (umbrales, variables prioritarias,
+integración con hardware).</li>
+<li><strong>Trazabilidad y puntos de revisión</strong> — las evaluaciones ES1–ES4 exigen hitos verificables.</li>
+<li><strong>Claridad de roles</strong> — un equipo pequeño debe saber quién hace qué.</li>
+<li><strong>Manejo de incertidumbre técnica</strong> — integración con firmware real, API y app existentes.</li>
+<li><strong>Entregables demostrables por iteración</strong> — cada avance debe poder mostrarse.</li>
+<li><strong>Adecuación a un equipo pequeño</strong> — recursos y tiempo limitados.</li>
+</ol>
+<h2 id="sec34">5.2. Alternativas consideradas</h2>
+<table>
+<thead>
+<tr>
+<th>Metodología</th>
+<th>Idea central</th>
+<th>Por qué podría servir</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Scrum</strong></td>
+<td>Iteraciones de duración fija (<em>sprints</em>) con roles, eventos y artefactos</td>
+<td>Estructura y puntos de control claros; entregas incrementales</td>
+</tr>
+<tr>
+<td><strong>Scrumban</strong></td>
+<td>Híbrido entre Scrum y Kanban; flujo continuo con algunas ceremonias</td>
+<td>Alta flexibilidad para tareas inciertas (integración)</td>
+</tr>
+<tr>
+<td><strong>Kanban</strong></td>
+<td>Visualización del flujo y límite de trabajo en curso, sin iteraciones fijas</td>
+<td>Simplicidad y mínima carga de reuniones</td>
+</tr>
+</tbody></table>
+<h2 id="sec35">5.3. Comparación cuantitativa</h2>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th align="center">Scrum</th>
+<th align="center">Scrumban</th>
+<th align="center">Kanban</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Adaptabilidad a cambios</td>
+<td align="center">4</td>
+<td align="center">5</td>
+<td align="center">5</td>
+</tr>
+<tr>
+<td>Trazabilidad y revisiones</td>
+<td align="center">5</td>
+<td align="center">4</td>
+<td align="center">3</td>
+</tr>
+<tr>
+<td>Claridad de roles</td>
+<td align="center">5</td>
+<td align="center">3</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td>Manejo de incertidumbre técnica</td>
+<td align="center">4</td>
+<td align="center">5</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td>Entregables demostrables por iteración</td>
+<td align="center">5</td>
+<td align="center">4</td>
+<td align="center">3</td>
+</tr>
+<tr>
+<td>Adecuación a equipo pequeño</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">5</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td align="center"><strong>27</strong></td>
+<td align="center"><strong>25</strong></td>
+<td align="center"><strong>22</strong></td>
+</tr>
+</tbody></table>
+<p>El uso de <strong>los mismos criterios y la misma escala</strong> para las tres alternativas es lo que hace la
+comparación auditable: el resultado no depende de una tabla distinta para cada metodología.</p>
+<h2 id="sec36">5.4. Comparación cualitativa</h2>
+<table>
+<thead>
+<tr>
+<th>Metodología</th>
+<th>Ventajas</th>
+<th>Desventajas</th>
+<th>Decisión</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Scrum</strong></td>
+<td>Estructura clara, roles definidos, revisiones constantes, avances demostrables</td>
+<td>Requiere reuniones frecuentes y mayor disciplina</td>
+<td><strong>Seleccionada</strong>: mayor puntaje y mejor ajuste</td>
+</tr>
+<tr>
+<td><strong>Scrumban</strong></td>
+<td>Alta flexibilidad; útil para tareas inciertas como la integración con hardware</td>
+<td>Depende más de la autodisciplina al no tener reuniones fijas</td>
+<td>Descartada: el equipo prioriza puntos de revisión obligatorios</td>
+</tr>
+<tr>
+<td><strong>Kanban</strong></td>
+<td>Proceso simple, mínima carga</td>
+<td>Sin hitos de revisión; difícil detectar desviaciones tempranas en un equipo pequeño</td>
+<td>Descartada: menor trazabilidad para este contexto</td>
+</tr>
+</tbody></table>
+<h2 id="sec37">5.5. Decisión y justificación</h2>
+<p><strong>Metodología seleccionada: Scrum, con iteraciones (<em>sprints</em>) de dos semanas.</strong></p>
+<p>La justificación se vincula explícitamente a las características del proyecto y a las solicitudes del
+cliente, tal como exige la rúbrica:</p>
+<table>
+<thead>
+<tr>
+<th>Característica del proyecto / solicitud</th>
+<th>Por qué Scrum es adecuado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tamaño del equipo</strong> (equipo pequeño y autoorganizado)</td>
+<td>Scrum está diseñado para equipos pequeños con responsabilidades claras</td>
+</tr>
+<tr>
+<td><strong>Alcance definido pero con incógnitas</strong> (umbrales, variables prioritarias)</td>
+<td>El backlog se <strong>reprioriza</strong> al inicio de cada sprint según hallazgos y feedback</td>
+</tr>
+<tr>
+<td><strong>Incertidumbre técnica</strong> (firmware real, API, app existente)</td>
+<td>Las iteraciones cortas permiten <strong>detectar temprano</strong> los problemas de integración</td>
+</tr>
+<tr>
+<td><strong>Cliente / contraparte</strong> (profesor y empresa pueden revisar avances)</td>
+<td>La revisión de sprint valida el avance con la contraparte</td>
+</tr>
+<tr>
+<td><strong>Entregables académicos</strong> (ES1–ES4)</td>
+<td>Cada evaluación puede ser un <strong>hito de sprint</strong> con entregable tangible</td>
+</tr>
+<tr>
+<td><strong>Necesidad de trazabilidad</strong></td>
+<td>Los artefactos de Scrum (backlog, incremento, revisión) dejan registro del avance</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Coherencia con el resto del proyecto.</strong> La decisión de Scrum de dos semanas es la misma que se
+usó para construir el cronograma por iteraciones de ES2 (<code>docs/ES2/01-metodologia-cronograma.md</code>),
+de modo que la metodología no quedó como una declaración aislada: se aplicó.</p>
+</blockquote>
+<h2 id="sec38">5.6. Implicancias de la elección</h2>
+<p>Adoptar Scrum implica, para las etapas siguientes:</p>
+<ul>
+<li>Mantener un <strong>backlog priorizado</strong> con identificadores estables (<code>HU</code>, <code>RF</code>, <code>RNF</code>).</li>
+<li>Cerrar cada sprint con <strong>funcionalidad demostrable</strong> y no solo con documentación.</li>
+<li>Realizar <strong>revisión</strong> con la contraparte para validar supuestos (umbrales, variables, frecuencia).</li>
+<li>Sostener la <strong>matriz de trazabilidad viva</strong> (capítulo 08), que es el criterio de calidad del desafío.</li>
+</ul>
+<p>El descarte de Kanban y Scrumban no responde a que sean &quot;peores&quot;, sino a que <strong>no garantizan los
+puntos de control</strong> que este proyecto, con su incertidumbre técnica y sus hitos académicos, necesita.</p>
+
+</section>
+<section class="doc">
+<h1 id="sec39">06 · Historias de usuario (backlog inicial)</h1>
+<h2 id="sec40">6.1. Formato adoptado</h2>
+<p>Cada historia se redacta con la estructura <strong>rol — característica — razón</strong> (equivalente a
+<em>«Como [rol], quiero [característica] para [razón/beneficio]»</em>) y se acompaña de <strong>criterios de
+aceptación numerados (CA①, CA②, …)</strong>, verificables y medibles. Este formato cumple tres exigencias
+de la rúbrica a la vez: incluye el <strong>actor</strong>, su <strong>objetivo</strong> y las <strong>condiciones de aceptación</strong>.</p>
+<p>Además, cada historia declara los <strong>requerimientos funcionales (RF)</strong> que la satisfacen, lo que
+permite trazar historia → requerimiento (capítulo 08).</p>
+<h2 id="sec41">6.2. Backlog HU01…HU11</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rol</th>
+<th>Característica</th>
+<th>Razón</th>
+<th>Criterios de aceptación</th>
+<th>RF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>HU01</strong></td>
+<td>Encargado de Cultivo</td>
+<td>Visualizar un dashboard con el estado actual de todas las variables (temperatura, humedad, pH, caudal, nivel)</td>
+<td>Para tomar decisiones rápidas y oportunas sobre riego y nutrientes</td>
+<td>① Muestra la última medición de cada sensor por sistema. ② Se actualiza automáticamente o mediante botón de refresco. ③ Los valores fuera de rango se distinguen visualmente. ④ Indica fecha y hora de la última medición.</td>
+<td>RF07</td>
+</tr>
+<tr>
+<td><strong>HU02</strong></td>
+<td>Encargado de Cultivo</td>
+<td>Consultar el histórico de una variable en un rango de fechas</td>
+<td>Para detectar tendencias estacionales o anomalías en el cultivo</td>
+<td>① Filtra por sistema, sensor, fecha de inicio y fin. ② Muestra gráfico de líneas y tabla paginada. ③ Permite exportar los datos consultados.</td>
+<td>RF08</td>
+</tr>
+<tr>
+<td><strong>HU03</strong></td>
+<td>Encargado de Cultivo</td>
+<td>Recibir alertas automáticas cuando un valor supere un umbral predefinido</td>
+<td>Para actuar de inmediato antes de que el cultivo sufra daños críticos</td>
+<td>① La alerta se genera al recibir una medición fuera de norma. ② Aparece en el dashboard con severidad y timestamp. ③ Puede marcarse como resuelta. ④ Queda registro histórico de la alerta.</td>
+<td>RF11, RF12</td>
+</tr>
+<tr>
+<td><strong>HU04</strong></td>
+<td>Supervisor</td>
+<td>Comparar el desempeño de varios sistemas AquaBrain en un mismo gráfico</td>
+<td>Para identificar instalaciones con bajo rendimiento operativo</td>
+<td>① Selección múltiple de sistemas para una variable común. ② Líneas superpuestas con colores y leyenda. ③ Permite filtrar por rango de fechas.</td>
+<td>RF09</td>
+</tr>
+<tr>
+<td><strong>HU05</strong></td>
+<td>Administrador</td>
+<td>Gestionar usuarios y sus roles de acceso</td>
+<td>Para cumplir el principio de privilegio mínimo y proteger la plataforma</td>
+<td>① CRUD completo de usuarios. ② Asignación de roles: Encargado, Supervisor, Administrador. ③ Contraseñas protegidas con bcrypt. ④ Un administrador no puede eliminar su propia cuenta.</td>
+<td>RF01, RF02</td>
+</tr>
+<tr>
+<td><strong>HU06</strong></td>
+<td>Administrador</td>
+<td>Registrar instalaciones, dispositivos físicos y sensores</td>
+<td>Para mantener actualizado el inventario operativo de la plataforma</td>
+<td>① Formulario para agregar sistemas y asociar dispositivos/sensores. ② Validación estricta de campos obligatorios y unicidad. ③ Permite listar, editar y eliminar registros.</td>
+<td>RF03, RF04, RF05</td>
+</tr>
+<tr>
+<td><strong>HU07</strong></td>
+<td>Administrador</td>
+<td>Definir umbrales y reglas de alerta personalizadas</td>
+<td>Para adaptar el comportamiento de aviso según los parámetros del cultivo</td>
+<td>① Interfaz de configuración: variable, condición, valor y severidad. ② Opción de activar o desactivar reglas. ③ Permite <strong>probar la regla con una medición simulada</strong>.</td>
+<td>RF10</td>
+</tr>
+<tr>
+<td><strong>HU08</strong></td>
+<td>Dispositivo / Simulador IoT</td>
+<td>Enviar mediciones a través de una API REST protegida</td>
+<td>Para que la plataforma centralice y persista la información generada en terreno</td>
+<td>① <code>POST /api/mediciones</code> acepta JSON estructurado. ② Valida existencia de sistema y sensor. ③ <strong>Rechaza marcas de tiempo futuras.</strong> ④ Responde <strong>201</strong> en éxito, <strong>400</strong> en error de validación y <strong>401</strong> sin autenticación.</td>
+<td>RF06</td>
+</tr>
+<tr>
+<td><strong>HU09</strong></td>
+<td>Administrador / Comercial</td>
+<td>Administrar suscripciones y licencias de uso por cliente o instalación</td>
+<td>Para controlar la vigencia del servicio y los niveles de acceso</td>
+<td>① CRUD de vigencia de licencias por cliente o instalación. ② Restricción automática de acceso si la licencia está expirada. ③ Historial de cambios de licencia. ④ <strong>Supuesto a validar</strong>: no está respaldado explícitamente por el desafío.</td>
+<td>RF15 (<em>Won&#39;t</em>)</td>
+</tr>
+<tr>
+<td><strong>HU10</strong></td>
+<td>Dispositivo / Simulador IoT</td>
+<td>Almacenar mediciones localmente ante cortes de red y reintentar su envío al reconectar</td>
+<td>Para evitar la pérdida de datos críticos durante conectividad intermitente</td>
+<td>① La API acepta marcas de tiempo <strong>pasadas</strong>. ② El dispositivo almacena datos offline temporalmente. ③ Ejecuta reintentos automáticos al recuperar la red. ④ Registra sincronización exitosa o fallida.</td>
+<td>RF06, RF14</td>
+</tr>
+<tr>
+<td><strong>HU11</strong></td>
+<td>Desarrollador de Integraciones</td>
+<td>Acceder a documentación OpenAPI/Swagger actualizada y versionada</td>
+<td>Para integrar la app Android existente y el firmware sin duplicar lógica de negocio</td>
+<td>① Documentación OpenAPI/Swagger publicada y versionada. ② Incluye endpoints, esquemas, códigos de error y ejemplos. ③ Validada contra la app Android de prueba. ④ Permite generar clientes de API automáticamente.</td>
+<td>RF13</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Cobertura de roles.</strong> El backlog cubre los cuatro actores del desafío: los tres roles humanos
+(Encargado, Supervisor, Administrador) y los actores máquina (Dispositivo/Simulador), además del
+rol técnico de integración (HU11). Los criterios de aceptación se ampliaron como parte de las
+correcciones del docente (ver Anexo D, C-06).</p>
+</blockquote>
+<h2 id="sec42">6.3. Adaptación de las historias al negocio y a los usuarios finales</h2>
+<p>Las historias no son genéricas: cada una recoge una particularidad del negocio de AquaPlants.</p>
+<table>
+<thead>
+<tr>
+<th>Aspecto específico del negocio</th>
+<th>Historia adaptada</th>
+<th>En qué se nota que es propia de AquaPlants</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cultivo hidropónico/aeropónico</td>
+<td>HU01, HU02</td>
+<td>El dashboard y los históricos muestran variables de cultivo (temperatura, humedad, nivel, pH, caudal), no métricas genéricas</td>
+</tr>
+<tr>
+<td>Múltiples sistemas AquaBrain</td>
+<td>HU04</td>
+<td>El supervisor compara <strong>varios sistemas</strong> en un mismo gráfico, algo propio de una operación con varias instalaciones</td>
+</tr>
+<tr>
+<td>Conectividad intermitente en terreno</td>
+<td>HU10</td>
+<td>El dispositivo puede reenviar mediciones tras una caída, reflejando la realidad operacional</td>
+</tr>
+<tr>
+<td>Roles organizacionales diferenciados</td>
+<td>HU05, HU06, HU07</td>
+<td>El administrador gestiona usuarios, inventario y reglas; el encargado opera; el supervisor analiza</td>
+</tr>
+<tr>
+<td>Dispositivo como actor</td>
+<td>HU08, HU10</td>
+<td>La máquina tiene historias propias (enviar y reintentar), coherente con el firmware real</td>
+</tr>
+<tr>
+<td>App móvil ya existente</td>
+<td>HU11</td>
+<td>Se exige documentación de API para no romper ni duplicar la app Android de la empresa</td>
+</tr>
+<tr>
+<td>Consistencia con el display local</td>
+<td>HU01 (CA①/③) y RNF05</td>
+<td>La información del dashboard no debe contradecir lo que muestra el OLED del AquaBrain</td>
+</tr>
+</tbody></table>
+<h2 id="sec43">6.4. Priorización y plan de entregas</h2>
+<p>La priorización MoSCoW de las historias se alinea con la de los requisitos y define el orden de
+construcción:</p>
+<table>
+<thead>
+<tr>
+<th>Historia</th>
+<th>MoSCoW</th>
+<th>Iteración prevista</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HU06, HU08</td>
+<td><strong>Must</strong></td>
+<td>Sprint 1</td>
+<td>Datos maestros e ingesta: sin ellos no hay nada que mostrar</td>
+</tr>
+<tr>
+<td>HU01, HU03</td>
+<td><strong>Must</strong></td>
+<td>Sprint 2</td>
+<td>Dashboard y alertas: el valor central para el encargado</td>
+</tr>
+<tr>
+<td>HU05, HU07</td>
+<td><strong>Should</strong></td>
+<td>Sprint 3</td>
+<td>Gestión de usuarios y reglas: completan la administración</td>
+</tr>
+<tr>
+<td>HU02</td>
+<td><strong>Should</strong></td>
+<td>Sprint 3</td>
+<td>Históricos: valor analítico</td>
+</tr>
+<tr>
+<td>HU10, HU11</td>
+<td><strong>Should</strong></td>
+<td>Sprint 3–4</td>
+<td>Resiliencia e integración con clientes existentes</td>
+</tr>
+<tr>
+<td>HU04</td>
+<td><strong>Could</strong></td>
+<td>Sprint 4</td>
+<td>Comparativas: valor estratégico opcional</td>
+</tr>
+<tr>
+<td>HU09</td>
+<td><strong>Won&#39;t</strong></td>
+<td>—</td>
+<td>Licenciamiento fuera de alcance por ahora (supuesto a validar)</td>
+</tr>
+</tbody></table>
+<h2 id="sec44">6.5. Historia fuera de alcance</h2>
+<p><strong>HU09 (licenciamiento)</strong> se mantiene en el backlog pero clasificada como <em>Won&#39;t (por ahora)</em>: el
+desafío no la respalda explícitamente, por lo que se documenta su forma sin implementarla y queda como
+supuesto a validar con la contraparte. Su inclusión explícita —en lugar de omitirla— demuestra que la
+exclusión fue una <strong>decisión consciente</strong> y no un olvido.</p>
+
+</section>
+<section class="doc">
+<h1 id="sec45">07 · Catálogo de requerimientos funcionales y no funcionales</h1>
+<h2 id="sec46">7.1. Criterio de clasificación</h2>
+<p>La clasificación distingue con claridad qué <strong>hace</strong> el sistema de <strong>cómo</strong> debe comportarse:</p>
+<ul>
+<li><strong>Requerimiento funcional (RF):</strong> describe una <strong>función</strong> o comportamiento que el sistema debe
+ejecutar (registrar una medición, autenticar, generar una alerta). Es verificable mediante una
+acción con un resultado esperado.</li>
+<li><strong>Requerimiento no funcional (RNF):</strong> describe una <strong>cualidad o restricción</strong> de calidad
+(seguridad, rendimiento, disponibilidad, usabilidad, mantenibilidad, interoperabilidad,
+escalabilidad, privacidad). Se verifica con mediciones, revisiones o pruebas de calidad.</li>
+</ul>
+<p>Cada requerimiento declara además su <strong>historia de usuario</strong> de origen, su <strong>prioridad MoSCoW</strong>, su
+<strong>necesidad</strong> asociada y su <strong>forma de verificación</strong>, de modo que sea <strong>verificable y trazable</strong> y
+tenga un <strong>propósito</strong> explícito.</p>
+<h2 id="sec47">7.2. Requerimientos funcionales (RF01…RF15)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+<th>HU</th>
+<th>MoSCoW</th>
+<th>Necesidad</th>
+<th>Verificabilidad</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RF01</strong></td>
+<td>Autenticación y autorización con JWT y roles (encargado, supervisor, administrador)</td>
+<td>HU05</td>
+<td><strong>Must</strong></td>
+<td>NEC-07</td>
+<td>Probar que un usuario sin token no accede a endpoints protegidos</td>
+</tr>
+<tr>
+<td><strong>RF02</strong></td>
+<td>Gestión de usuarios (CRUD) restringida a administradores</td>
+<td>HU05</td>
+<td><strong>Must</strong></td>
+<td>NEC-07</td>
+<td>Probar que un encargado no puede crear ni eliminar usuarios</td>
+</tr>
+<tr>
+<td><strong>RF03</strong></td>
+<td>Gestión de sistemas/instalaciones (CRUD) con nombre, ubicación y descripción</td>
+<td>HU06</td>
+<td><strong>Must</strong></td>
+<td>NEC-01</td>
+<td>Probar creación, edición y eliminación de sistemas</td>
+</tr>
+<tr>
+<td><strong>RF04</strong></td>
+<td>Gestión de dispositivos asociados a sistemas</td>
+<td>HU06</td>
+<td><strong>Must</strong></td>
+<td>NEC-01</td>
+<td>Probar que un dispositivo se asigna correctamente a un sistema</td>
+</tr>
+<tr>
+<td><strong>RF05</strong></td>
+<td>Gestión de sensores asociados a dispositivos, incluyendo tipo de variable y unidad (°C, %, cm, pH, L/min)</td>
+<td>HU06</td>
+<td><strong>Must</strong></td>
+<td>NEC-01</td>
+<td>Verificar que los sensores se crean con los atributos correctos</td>
+</tr>
+<tr>
+<td><strong>RF06</strong></td>
+<td>Registro de mediciones vía API (<code>POST /api/mediciones</code>), desde firmware ESP32 real (AHT10, HC-SR04) o simulador, con validación de existencia de sistema y sensor</td>
+<td>HU08</td>
+<td><strong>Must</strong></td>
+<td>NEC-04</td>
+<td>Enviar datos válidos e inválidos, con origen simulado y con formato del firmware real, y comprobar respuestas HTTP</td>
+</tr>
+<tr>
+<td><strong>RF07</strong></td>
+<td>Dashboard con la última medición de cada sensor por sistema, con indicadores visuales</td>
+<td>HU01</td>
+<td><strong>Must</strong></td>
+<td>NEC-02</td>
+<td>Comprobar que el dashboard refleja los últimos datos insertados</td>
+</tr>
+<tr>
+<td><strong>RF08</strong></td>
+<td>Consulta de históricos con filtros (sistema, sensor, rango de fechas) y visualización en tabla y gráfico</td>
+<td>HU02</td>
+<td><strong>Should</strong></td>
+<td>NEC-08</td>
+<td>Realizar consultas con distintos filtros y verificar resultados</td>
+</tr>
+<tr>
+<td><strong>RF09</strong></td>
+<td>Comparativa gráfica de múltiples sistemas para una misma variable</td>
+<td>HU04</td>
+<td><strong>Could</strong></td>
+<td>NEC-08</td>
+<td>Seleccionar varios sistemas y verificar la superposición de líneas</td>
+</tr>
+<tr>
+<td><strong>RF10</strong></td>
+<td>CRUD de reglas de alerta (nombre, variable, condición, umbral, severidad, activa/inactiva)</td>
+<td>HU07</td>
+<td><strong>Must</strong></td>
+<td>NEC-03</td>
+<td>Crear una regla y verificar que se guarda correctamente</td>
+</tr>
+<tr>
+<td><strong>RF11</strong></td>
+<td>Motor de alertas que evalúa cada nueva medición contra las reglas activas y genera registros de alerta</td>
+<td>HU03</td>
+<td><strong>Must</strong></td>
+<td>NEC-03</td>
+<td>Insertar una medición que incumpla una regla y comprobar que se genera la alerta</td>
+</tr>
+<tr>
+<td><strong>RF12</strong></td>
+<td>Lista de alertas con filtros (activas/resueltas, por sistema) y opción de marcar como resuelta</td>
+<td>HU03</td>
+<td><strong>Must</strong></td>
+<td>NEC-03</td>
+<td>Marcar una alerta como resuelta y verificar que sale de la lista de activas</td>
+</tr>
+<tr>
+<td><strong>RF13</strong></td>
+<td>Documentación de API (contrato estable OpenAPI/Swagger, versionado) para que la app Android y el firmware se integren sin duplicar lógica</td>
+<td>HU11</td>
+<td><strong>Should</strong></td>
+<td>NEC-05</td>
+<td>Validar contra la app Android de prueba que los endpoints responden como se espera</td>
+</tr>
+<tr>
+<td><strong>RF14</strong></td>
+<td>Registro y consulta del estado de conexión y &quot;última comunicación&quot; de cada dispositivo</td>
+<td>HU10</td>
+<td><strong>Should</strong></td>
+<td>NEC-06</td>
+<td>Simular una desconexión y verificar que el dashboard y el display local reflejan &quot;sin conexión&quot;</td>
+</tr>
+<tr>
+<td><strong>RF15</strong></td>
+<td>Gestión de suscripción y licenciamiento por cliente/instalación</td>
+<td>HU09</td>
+<td><strong>Won&#39;t</strong></td>
+<td>—</td>
+<td>Módulo fuera del alcance actual; supuesto a validar con la contraparte</td>
+</tr>
+</tbody></table>
+<p><strong>Distribución MoSCoW de los RF:</strong> 10 Must, 3 Should, 1 Could y 1 Won&#39;t.</p>
+<blockquote>
+<p><strong>Nota de alineación.</strong> RF13 puede expresarse también como requisito de <strong>interoperabilidad</strong>
+(RNF08); se mantiene como <strong>RF</strong> porque es un <strong>entregable contractual</strong> de la API. RF15 pasa a
+<em>Could</em> únicamente si la contraparte confirma el requisito.</p>
+</blockquote>
+<h2 id="sec48">7.3. Requerimientos no funcionales (RNF01…RNF11)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+<th>Propósito</th>
+<th>MoSCoW</th>
+<th>Verificabilidad</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RNF01</strong></td>
+<td>Seguridad: contraseñas hasheadas (bcrypt), JWT con expiración, HTTPS en producción, validación de entrada, protección contra inyección SQL/XSS</td>
+<td>Proteger datos de cultivo y de usuarios</td>
+<td><strong>Must</strong></td>
+<td>Revisión de código; pruebas básicas de penetración (SQLi, XSS)</td>
+</tr>
+<tr>
+<td><strong>RNF02</strong></td>
+<td>Disponibilidad: 99 % durante el horario de operación (8:00–20:00) en el entorno de prueba</td>
+<td>Que los encargados accedan cuando lo necesiten</td>
+<td><strong>Should</strong></td>
+<td>Monitoreo de uptime durante las pruebas</td>
+</tr>
+<tr>
+<td><strong>RNF03</strong></td>
+<td>Rendimiento: dashboard &lt; 2 s; consultas históricas de 1 mes &lt; 5 s para 50.000 registros</td>
+<td>Experiencia de usuario aceptable</td>
+<td><strong>Should</strong></td>
+<td>Pruebas de carga (JMeter, Artillery u otra)</td>
+</tr>
+<tr>
+<td><strong>RNF04</strong></td>
+<td>Escalabilidad: diseño con índices y normalización; documentación de estrategias futuras (particionamiento, réplicas)</td>
+<td>Preparar el crecimiento hacia cientos de sistemas</td>
+<td><strong>Won&#39;t</strong> (se documenta)</td>
+<td>Revisión del modelo de datos y su justificación</td>
+</tr>
+<tr>
+<td><strong>RNF05</strong></td>
+<td>Usabilidad: interfaz web responsive, navegación intuitiva, mensajes de error claros; consistencia con la información del display OLED local</td>
+<td>Usuarios no técnicos (encargados de cultivo)</td>
+<td><strong>Must</strong></td>
+<td>Pruebas de usabilidad con usuarios simulados</td>
+</tr>
+<tr>
+<td><strong>RNF06</strong></td>
+<td>Mantenibilidad: buenas prácticas, control de versiones (Git), documentación actualizada</td>
+<td>Facilitar futuras mejoras del equipo o de la empresa</td>
+<td><strong>Must</strong></td>
+<td>Inspección de código y README</td>
+</tr>
+<tr>
+<td><strong>RNF07</strong></td>
+<td>Portabilidad: despliegue con Docker o PaaS usando variables de entorno</td>
+<td>Ejecución en cualquier proveedor cloud</td>
+<td><strong>Should</strong></td>
+<td>Despliegue en al menos dos entornos (local y nube)</td>
+</tr>
+<tr>
+<td><strong>RNF08</strong></td>
+<td>Interoperabilidad: la API debe ser consumible por el firmware ESP32, la app Android existente y el dashboard web, sin requerir cambios en los clientes ya construidos</td>
+<td>Proteger la inversión de AquaPlants en hardware y app móvil</td>
+<td><strong>Should</strong></td>
+<td>Pruebas de integración con la app Android de prueba</td>
+</tr>
+<tr>
+<td><strong>RNF09</strong></td>
+<td>Autonomía local: el AquaBrain debe seguir mostrando información útil (OLED + joystick) durante una pérdida temporal de conectividad y sincronizar al reconectarse</td>
+<td>Continuidad operativa en zonas con conectividad intermitente</td>
+<td><strong>Won&#39;t</strong> (depende del firmware)</td>
+<td>Simular corte de red y verificar operación local y sincronización posterior</td>
+</tr>
+<tr>
+<td><strong>RNF10</strong></td>
+<td>Pruebas: cobertura unitaria ≥ 70 % en backend; pruebas de integración para la API; pruebas de carga básicas</td>
+<td>Asegurar calidad y detección temprana de errores</td>
+<td><strong>Should</strong></td>
+<td>Informe de cobertura de pruebas</td>
+</tr>
+<tr>
+<td><strong>RNF11</strong></td>
+<td>Privacidad y cumplimiento ético: minimización, retención limitada, logs de auditoría, anonimización cuando sea posible, referencia a Ley 19.628 y Ley 21.719</td>
+<td>Cumplir principios éticos, legales y profesionales</td>
+<td><strong>Must</strong></td>
+<td>Revisión de la política de datos y de los logs de auditoría</td>
+</tr>
+</tbody></table>
+<p><strong>Distribución MoSCoW de los RNF:</strong> 4 Must, 5 Should y 2 Won&#39;t.</p>
+<h2 id="sec49">7.4. Ejemplos explicados de cada tipo</h2>
+<p>La rúbrica pide ejemplos claros <strong>con su relevancia</strong>. Se explican dos RF y dos RNF:</p>
+<p><strong>Ejemplo de RF — RF06 (Registro de mediciones vía API).</strong>
+Es el <strong>corazón del flujo de datos</strong>: sin este endpoint, ni el firmware real ni el simulador podrían
+ingresar información, y no existiría nada que mostrar en el dashboard ni que evaluar para generar
+alertas. Es verificable enviando una medición válida y comprobando que responde <code>201</code>, y enviando
+datos inválidos o con marca de tiempo futura y comprobando que responde <code>400</code>. Su relevancia radica en
+que <strong>conecta el hardware que la empresa ya tiene</strong> con la capa digital.</p>
+<p><strong>Ejemplo de RF — RF10 (CRUD de reglas de alerta).</strong>
+Permite al administrador <strong>personalizar</strong> el comportamiento de las alertas (variable, condición,
+umbral, severidad) sin programar. Es verificable creando una regla y comprobando que se persiste y se
+aplica. Su relevancia es que adapta un mismo sistema a <strong>distintos cultivos y etapas</strong>, en lugar de
+fijar umbrales en el código.</p>
+<p><strong>Ejemplo de RNF — RNF03 (Rendimiento).</strong>
+Establece que el dashboard debe cargar en menos de 2 segundos y que una consulta de un mes debe
+responder en menos de 5 segundos para 50.000 registros. Es verificable con <strong>pruebas de carga</strong>. Su
+relevancia: el encargado de cultivo decide con rapidez, y una interfaz lenta sería inutilizable en la
+operación diaria.</p>
+<p><strong>Ejemplo de RNF — RNF08 (Interoperabilidad).</strong>
+Exige que la API sea consumible por el <strong>firmware</strong>, la <strong>app Android existente</strong> y el <strong>dashboard</strong>,
+sin obligar a modificar los clientes ya construidos. Es verificable validando el contrato contra la
+app de prueba. Su relevancia es <strong>proteger la inversión</strong> de AquaPlants y evitar silos de información.</p>
+<h2 id="sec50">7.5. Matriz MoSCoW consolidada</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tipo</th>
+<th>Descripción breve</th>
+<th>HU</th>
+<th>MoSCoW</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RF01</td>
+<td>RF</td>
+<td>Autenticación JWT y roles</td>
+<td>HU05</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF02</td>
+<td>RF</td>
+<td>CRUD de usuarios (solo administrador)</td>
+<td>HU05</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF03</td>
+<td>RF</td>
+<td>CRUD de sistemas/instalaciones</td>
+<td>HU06</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF04</td>
+<td>RF</td>
+<td>Gestión de dispositivos por sistema</td>
+<td>HU06</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF05</td>
+<td>RF</td>
+<td>Gestión de sensores por dispositivo</td>
+<td>HU06</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF06</td>
+<td>RF</td>
+<td>Registro de mediciones vía API</td>
+<td>HU08</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF07</td>
+<td>RF</td>
+<td>Dashboard con última medición por sensor/sistema</td>
+<td>HU01</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF08</td>
+<td>RF</td>
+<td>Consulta de históricos con filtros</td>
+<td>HU02</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RF09</td>
+<td>RF</td>
+<td>Comparativa gráfica multi-sistema</td>
+<td>HU04</td>
+<td>C</td>
+</tr>
+<tr>
+<td>RF10</td>
+<td>RF</td>
+<td>CRUD de reglas de alerta</td>
+<td>HU07</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF11</td>
+<td>RF</td>
+<td>Motor de evaluación de alertas</td>
+<td>HU03</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF12</td>
+<td>RF</td>
+<td>Lista de alertas y marcar como resuelta</td>
+<td>HU03</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RF13</td>
+<td>RF</td>
+<td>Documentación API (OpenAPI/Swagger) versionada</td>
+<td>HU11</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RF14</td>
+<td>RF</td>
+<td>Estado de conexión / última comunicación</td>
+<td>HU10</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RF15</td>
+<td>RF</td>
+<td>Gestión de suscripción y licenciamiento</td>
+<td>HU09</td>
+<td>W</td>
+</tr>
+<tr>
+<td>RNF01</td>
+<td>RNF</td>
+<td>Seguridad (bcrypt, JWT, HTTPS, validación, SQLi/XSS)</td>
+<td>—</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RNF02</td>
+<td>RNF</td>
+<td>Disponibilidad 99 % (8:00–20:00)</td>
+<td>—</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RNF03</td>
+<td>RNF</td>
+<td>Rendimiento (dashboard &lt; 2 s; históricos &lt; 5 s / 50.000)</td>
+<td>—</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RNF04</td>
+<td>RNF</td>
+<td>Escalabilidad (índices, normalización, particionamiento)</td>
+<td>—</td>
+<td>W</td>
+</tr>
+<tr>
+<td>RNF05</td>
+<td>RNF</td>
+<td>Usabilidad y consistencia con el OLED</td>
+<td>—</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RNF06</td>
+<td>RNF</td>
+<td>Mantenibilidad (buenas prácticas, Git, documentación)</td>
+<td>—</td>
+<td>M</td>
+</tr>
+<tr>
+<td>RNF07</td>
+<td>RNF</td>
+<td>Portabilidad (Docker / PaaS con variables de entorno)</td>
+<td>—</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RNF08</td>
+<td>RNF</td>
+<td>Interoperabilidad (firmware, app Android, dashboard)</td>
+<td>—</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RNF09</td>
+<td>RNF</td>
+<td>Autonomía local (OLED + joystick)</td>
+<td>—</td>
+<td>W</td>
+</tr>
+<tr>
+<td>RNF10</td>
+<td>RNF</td>
+<td>Cobertura de pruebas ≥ 70 % + integración y carga</td>
+<td>—</td>
+<td>S</td>
+</tr>
+<tr>
+<td>RNF11</td>
+<td>RNF</td>
+<td>Privacidad y cumplimiento ético (Ley 19.628/21.719)</td>
+<td>—</td>
+<td>M</td>
+</tr>
+</tbody></table>
+
+</section>
+<section class="doc">
+<h1 id="sec51">08 · Trazabilidad y relaciones entre artefactos</h1>
+<h2 id="sec52">8.1. Modelo de trazabilidad</h2>
+<p>El criterio de calidad del desafío es que <strong>la evidencia sea trazable y coherente</strong>: una necesidad se
+relaciona con una o más historias; estas con requerimientos; los requerimientos con casos de uso y
+diseño; y todo ello con la implementación y las pruebas. El modelo adoptado tiene <strong>siete eslabones</strong>:</p>
+
+<pre class="mermaid">flowchart LR
+    NEC[Necesidad NEC] --&gt; HU[Historia de usuario HU]
+    HU --&gt; REQ[Requerimiento RF / RNF]
+    REQ --&gt; CU[Caso de uso CU]
+    CU --&gt; DIS[Diseño: arquitectura, modelo, interfaz]
+    DIS --&gt; IMP[Implementación]
+    IMP --&gt; TS[Prueba TS]</pre>
+
+<p>Identificadores utilizados (únicos y estables):</p>
+<table>
+<thead>
+<tr>
+<th>Prefijo</th>
+<th>Significado</th>
+<th>Rango</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NEC</code></td>
+<td>Necesidad TI</td>
+<td>NEC-01 … NEC-09</td>
+</tr>
+<tr>
+<td><code>HU</code></td>
+<td>Historia de usuario</td>
+<td>HU01 … HU11</td>
+</tr>
+<tr>
+<td><code>RF</code> / <code>RNF</code></td>
+<td>Requerimiento funcional / no funcional</td>
+<td>RF01 … RF15 · RNF01 … RNF11</td>
+</tr>
+<tr>
+<td><code>CU</code></td>
+<td>Caso de uso</td>
+<td>CU-01 … CU-16</td>
+</tr>
+<tr>
+<td><code>RN</code></td>
+<td>Regla de negocio</td>
+<td>RN-01 … RN-12</td>
+</tr>
+<tr>
+<td><code>TS</code></td>
+<td>Caso de prueba</td>
+<td>TS-01 … TS-44</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Nota de honestidad.</strong> Este capítulo es la <strong>matriz de trazabilidad viva</strong> que el desafío pide
+mantener durante todo el semestre. Como ES1 es el diagnóstico, las columnas de <strong>diseño</strong>,
+<strong>implementación</strong> y <strong>prueba</strong> se completaron a medida que avanzaron ES2 y ES3; se incluyen aquí
+para demostrar que la cadena cierra de extremo a extremo. No implican que ES1 haya diseñado o
+implementado esas piezas.</p>
+</blockquote>
+<h2 id="sec53">8.2. Matriz principal: necesidad → historia → requisito → caso de uso → diseño → implementación → prueba</h2>
+<table>
+<thead>
+<tr>
+<th>NEC</th>
+<th>HU</th>
+<th>RF/RNF</th>
+<th>CU</th>
+<th>Diseño (referencia ES2)</th>
+<th>Implementación (referencia ES3)</th>
+<th>Prueba</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NEC-07</td>
+<td>HU05</td>
+<td>RF01, RF02, RNF01</td>
+<td>CU-01, CU-02</td>
+<td>Arquitectura §4.4 · Modelo §3.1 (<code>usuario</code>, <code>rol</code>, <code>refresh_token</code>) · Seguridad §2.1/§3</td>
+<td>Módulos <code>auth</code>, <code>usuarios</code>, <code>rbac</code> · <code>/auth/login</code>, <code>/auth/refresh</code>, <code>/auth/logout</code>, <code>/usuarios</code></td>
+<td>TS-12, TS-13, TS-14, TS-15, TS-16, TS-18, TS-19, TS-35</td>
+</tr>
+<tr>
+<td>NEC-01</td>
+<td>HU06</td>
+<td>RF03, RF04, RF05</td>
+<td>CU-03, CU-04, CU-05</td>
+<td>Modelo §3.2–§3.3 (<code>sistema</code>, <code>cultivo</code>, <code>planta</code>, <code>dispositivo</code>, <code>sensor</code>, <code>tipo_variable</code>)</td>
+<td>Módulos <code>sistemas</code>, <code>dispositivos</code> · <code>/sistemas</code>, <code>/dispositivos</code>, <code>/sensores</code></td>
+<td>TS-07, TS-21, TS-26, TS-28, TS-35</td>
+</tr>
+<tr>
+<td>NEC-02</td>
+<td>HU01</td>
+<td>RF07</td>
+<td>CU-08</td>
+<td>Arquitectura §4.2 (secuencia de dashboard) · Modelo §5 (<code>mv_ultima_medicion</code>)</td>
+<td><code>consultas</code> · <code>GET /dashboard/estado</code> · página <code>/dashboard</code></td>
+<td>TS-08, TS-37, TS-43</td>
+</tr>
+<tr>
+<td>NEC-03</td>
+<td>HU03</td>
+<td>RF11, RF12</td>
+<td>CU-07, CU-12</td>
+<td>Arquitectura §3.2/§4.1 (motor de reglas) · Modelo §3.4 (<code>regla_alerta</code>, <code>alerta</code>)</td>
+<td><code>alertas</code> · <code>/alertas</code>, <code>/alertas/{id}/resolver</code></td>
+<td>TS-01, TS-02, TS-03, TS-27, TS-35</td>
+</tr>
+<tr>
+<td>NEC-03</td>
+<td>HU07</td>
+<td>RF10</td>
+<td>CU-11</td>
+<td>Modelo §3.4 (<code>regla_alerta</code>, <code>Regla.probar()</code>) · Seguridad §3.4</td>
+<td><code>alertas</code> (reglas) · <code>/reglas</code>, <code>/reglas/probar</code></td>
+<td>TS-04, TS-05, TS-06, TS-27</td>
+</tr>
+<tr>
+<td>NEC-04</td>
+<td>HU08</td>
+<td>RF06, RN-11</td>
+<td>CU-06</td>
+<td>Arquitectura §4.1 (secuencia de ingesta) · Modelo §3.4 (<code>medicion</code>) y §7 (payload crudo)</td>
+<td><code>mediciones</code> · <code>POST /mediciones</code>, <code>/mediciones/bulk</code> · <code>apps/simulator</code></td>
+<td>TS-07, TS-10, TS-22, TS-25, TS-26, TS-30, TS-34, TS-36</td>
+</tr>
+<tr>
+<td>NEC-05</td>
+<td>HU11</td>
+<td>RF13, RNF08</td>
+<td>CU-15</td>
+<td>Stack §1 (OpenAPI) · Arquitectura §4.7 (publicación del contrato)</td>
+<td><code>@nestjs/swagger</code> en <code>/api/docs</code> · validación contra la app Android</td>
+<td>TS-42</td>
+</tr>
+<tr>
+<td>NEC-06</td>
+<td>HU10</td>
+<td>RF06, RF14</td>
+<td>CU-13, CU-14</td>
+<td>Arquitectura §4.5/§4.6 · Modelo §3.4 (<code>id_externo</code>, índice único parcial)</td>
+<td><code>mediciones</code> (idempotencia) + <code>dispositivos</code> (estado) + job · <code>apps/simulator</code> (buffer)</td>
+<td>TS-09, TS-11, TS-36, TS-40, TS-41</td>
+</tr>
+<tr>
+<td>NEC-08</td>
+<td>HU02</td>
+<td>RF08, RNF03</td>
+<td>CU-09</td>
+<td>Arquitectura §4.3 · Modelo §8.3 (agregación)</td>
+<td><code>consultas</code> · <code>GET /mediciones/serie</code>, <code>?formato=csv</code></td>
+<td>TS-38, TS-43</td>
+</tr>
+<tr>
+<td>NEC-08</td>
+<td>HU04</td>
+<td>RF09</td>
+<td>CU-10</td>
+<td>Arquitectura §4.3</td>
+<td><code>consultas</code> · <code>GET /mediciones/serie?sistemas[]</code></td>
+<td>TS-39</td>
+</tr>
+<tr>
+<td>NEC-09</td>
+<td>— (transversal)</td>
+<td>RNF04, RNF06</td>
+<td>—</td>
+<td>Modelo §6 (particionado) y §8 (normalización)</td>
+<td>Índices, particionado mensual, monorepo y documentación</td>
+<td>Revisión del modelo + TS-24, TS-43, TS-44</td>
+</tr>
+<tr>
+<td>— (contrato)</td>
+<td>— (transversal)</td>
+<td>RNF01, RNF11</td>
+<td>—</td>
+<td>Seguridad §2–§6 · Modelo §3.1 (<code>auditoria</code>)</td>
+<td>Guards, interceptor de auditoría, validación compartida</td>
+<td>TS-12…TS-21, TS-27, TS-29, TS-31, TS-33</td>
+</tr>
+<tr>
+<td>— (Won&#39;t)</td>
+<td>HU09</td>
+<td>RF15</td>
+<td>CU-16</td>
+<td>Modelo §10 (forma de licencia, fuera de alcance) · supuesto <code>SUP-09</code></td>
+<td><strong>No implementado</strong> (decisión <em>Won&#39;t por ahora</em>)</td>
+<td>— (postergado)</td>
+</tr>
+</tbody></table>
+<p><strong>Lectura:</strong> cada fila conecta una necesidad del negocio con su evidencia final. Las necesidades
+<strong>Must</strong> y <strong>Should</strong> están cubiertas de extremo a extremo; las líneas marcadas como <em>Won&#39;t</em> se
+declaran explícitamente sin evidencia de prueba, porque no se implementaron.</p>
+<h2 id="sec54">8.3. Cobertura de los criterios de aceptación por historia</h2>
+<p>Toda historia tiene al menos un requerimiento y una prueba que verifica sus criterios de aceptación:</p>
+<table>
+<thead>
+<tr>
+<th>HU</th>
+<th>Cubierta por</th>
+<th>Pruebas de sus criterios de aceptación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HU01</td>
+<td>RF07</td>
+<td>TS-37 (CA①, CA②, CA④), TS-08 (CA③)</td>
+</tr>
+<tr>
+<td>HU02</td>
+<td>RF08</td>
+<td>TS-38 (CA①, CA②, CA③)</td>
+</tr>
+<tr>
+<td>HU03</td>
+<td>RF11, RF12</td>
+<td>TS-01/TS-02 (CA①), TS-35 (CA②, CA③, CA④)</td>
+</tr>
+<tr>
+<td>HU04</td>
+<td>RF09</td>
+<td>TS-39 (CA①, CA②, CA③)</td>
+</tr>
+<tr>
+<td>HU05</td>
+<td>RF01, RF02</td>
+<td>TS-12 (CA③), TS-19 (CA④), TS-35 (CA①, CA②)</td>
+</tr>
+<tr>
+<td>HU06</td>
+<td>RF03, RF04, RF05</td>
+<td>TS-07, TS-21, TS-35 (CA①, CA②, CA③)</td>
+</tr>
+<tr>
+<td>HU07</td>
+<td>RF10</td>
+<td>TS-06 (CA③), TS-04 (CA②)</td>
+</tr>
+<tr>
+<td>HU08</td>
+<td>RF06</td>
+<td>TS-10 (CA③), TS-22 (CA④), TS-07 (CA②)</td>
+</tr>
+<tr>
+<td>HU09</td>
+<td>RF15 (Won&#39;t)</td>
+<td>— (postergado, <code>SUP-09</code>)</td>
+</tr>
+<tr>
+<td>HU10</td>
+<td>RF06, RF14</td>
+<td>TS-11 (CA①), TS-41 (CA②, CA③, CA④)</td>
+</tr>
+<tr>
+<td>HU11</td>
+<td>RF13</td>
+<td>TS-42 (CA①, CA②, CA③, CA④)</td>
+</tr>
+</tbody></table>
+<h2 id="sec55">8.4. Trazabilidad de los requerimientos no funcionales</h2>
+<table>
+<thead>
+<tr>
+<th>RNF</th>
+<th>Decisión de diseño que lo sostiene</th>
+<th>Verificación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RNF01 (seguridad)</td>
+<td>bcrypt, JWT corto + refresh rotativo, RBAC, API key de dispositivo, TLS, límites de tasa, validación de entrada</td>
+<td>TS-12…TS-16, TS-20, TS-21, TS-23, TS-25, TS-26, TS-29, TS-31, TS-33</td>
+</tr>
+<tr>
+<td>RNF02 (disponibilidad)</td>
+<td>Base de datos como fuente de verdad, <em>health check</em>, respaldos, degradación controlada</td>
+<td>TS-32, TS-34, TS-44</td>
+</tr>
+<tr>
+<td>RNF03 (rendimiento)</td>
+<td>Caché con TTL, agregación en BD, paginación por cursor, índices, vista de última medición</td>
+<td>TS-43</td>
+</tr>
+<tr>
+<td>RNF04 (escalabilidad — Won&#39;t)</td>
+<td>Particionado mensual, índices, normalización, contenedor sin estado</td>
+<td>Revisión del modelo</td>
+</tr>
+<tr>
+<td>RNF05 (usabilidad + OLED)</td>
+<td>Guía visual, componentes con estados, responsive, accesibilidad, semántica alineada con el display</td>
+<td>Checklist manual + TS-37</td>
+</tr>
+<tr>
+<td>RNF06 (mantenibilidad)</td>
+<td>Monorepo, tipado estricto, lint, pruebas, integración continua, documentación</td>
+<td>Pipeline + cobertura ≥ 70 % (TS-44)</td>
+</tr>
+<tr>
+<td>RNF07 (portabilidad)</td>
+<td>Contenedores + variables de entorno + migraciones + semilla + README</td>
+<td>Prueba de levantamiento desde cero</td>
+</tr>
+<tr>
+<td>RNF08 (interoperabilidad)</td>
+<td>API REST versionada con OpenAPI 3 publicado; contrato validado contra la app de prueba</td>
+<td>TS-42</td>
+</tr>
+<tr>
+<td>RNF09 (autonomía local — Won&#39;t)</td>
+<td>Estrategia <em>store-and-forward</em>; la web tolera datos tardíos (origen OFFLINE)</td>
+<td>TS-41 (parte web)</td>
+</tr>
+<tr>
+<td>RNF10 (cobertura ≥ 70 % + integración y carga)</td>
+<td>Pruebas unitarias y de integración; carga; umbral de cobertura como criterio de salida</td>
+<td>TS-44</td>
+</tr>
+<tr>
+<td>RNF11 (privacidad y cumplimiento)</td>
+<td>Tabla de auditoría, minimización, retención, logs sin datos sensibles, Ley 19.628/21.719</td>
+<td>TS-27, TS-29 + revisión de política de datos</td>
+</tr>
+</tbody></table>
+<h2 id="sec56">8.5. Casos de uso (CU-01…CU-16)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Caso de uso</th>
+<th>Actor primario</th>
+<th>HU</th>
+<th>RF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CU-01</td>
+<td>Iniciar / cerrar sesión</td>
+<td>Usuario autorizado</td>
+<td>HU05</td>
+<td>RF01</td>
+</tr>
+<tr>
+<td>CU-02</td>
+<td>Gestionar usuarios y roles</td>
+<td>Administrador</td>
+<td>HU05</td>
+<td>RF01, RF02</td>
+</tr>
+<tr>
+<td>CU-03</td>
+<td>Gestionar sistemas/instalaciones y cultivos</td>
+<td>Administrador</td>
+<td>HU06</td>
+<td>RF03</td>
+</tr>
+<tr>
+<td>CU-04</td>
+<td>Gestionar dispositivos</td>
+<td>Administrador</td>
+<td>HU06</td>
+<td>RF04</td>
+</tr>
+<tr>
+<td>CU-05</td>
+<td>Gestionar sensores y tipos de variable</td>
+<td>Administrador</td>
+<td>HU06</td>
+<td>RF05</td>
+</tr>
+<tr>
+<td>CU-06</td>
+<td>Ingresar medición (individual o lote)</td>
+<td>Dispositivo / Simulador IoT</td>
+<td>HU08</td>
+<td>RF06</td>
+</tr>
+<tr>
+<td>CU-07</td>
+<td>Evaluar regla y generar alerta</td>
+<td>Sistema (evento interno)</td>
+<td>HU03</td>
+<td>RF11</td>
+</tr>
+<tr>
+<td>CU-08</td>
+<td>Consultar estado actual (dashboard)</td>
+<td>Encargado de cultivo</td>
+<td>HU01</td>
+<td>RF07</td>
+</tr>
+<tr>
+<td>CU-09</td>
+<td>Consultar históricos y exportar</td>
+<td>Encargado de Cultivo</td>
+<td>HU02</td>
+<td>RF08</td>
+</tr>
+<tr>
+<td>CU-10</td>
+<td>Comparar sistemas en un mismo gráfico</td>
+<td>Supervisor</td>
+<td>HU04</td>
+<td>RF09</td>
+</tr>
+<tr>
+<td>CU-11</td>
+<td>Configurar reglas de alerta y probarlas</td>
+<td>Administrador</td>
+<td>HU07</td>
+<td>RF10</td>
+</tr>
+<tr>
+<td>CU-12</td>
+<td>Gestionar alertas (marcar resuelta)</td>
+<td>Encargado de Cultivo</td>
+<td>HU03</td>
+<td>RF12</td>
+</tr>
+<tr>
+<td>CU-13</td>
+<td>Monitorear estado de conexión y última comunicación</td>
+<td>Encargado / Supervisor</td>
+<td>HU10</td>
+<td>RF14</td>
+</tr>
+<tr>
+<td>CU-14</td>
+<td>Sincronizar mediciones tras corte de red</td>
+<td>Dispositivo / Simulador IoT</td>
+<td>HU10</td>
+<td>RF06, RF14</td>
+</tr>
+<tr>
+<td>CU-15</td>
+<td>Consultar documentación de la API</td>
+<td>Desarrollador de Integraciones</td>
+<td>HU11</td>
+<td>RF13</td>
+</tr>
+<tr>
+<td>CU-16</td>
+<td>Administrar licencias <em>(fuera de alcance)</em></td>
+<td>Administrador / Comercial</td>
+<td>HU09</td>
+<td>RF15</td>
+</tr>
+</tbody></table>
+<h2 id="sec57">8.6. Reglas de negocio (RN-01…RN-12)</h2>
+<p>Las reglas de negocio son restricciones que el software debe respetar; nacen del dominio, de la
+trazabilidad o de las reglas operacionales entregadas por la empresa:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Regla</th>
+<th>Origen</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RN-01</td>
+<td>Toda medición pertenece a un sensor, que pertenece a un dispositivo, que pertenece a un sistema</td>
+<td>Modelo de dominio</td>
+</tr>
+<tr>
+<td>RN-02</td>
+<td>Una medición nunca se modifica ni se elimina: el histórico es inmutable (solo <em>append</em>)</td>
+<td>Trazabilidad</td>
+</tr>
+<tr>
+<td>RN-03</td>
+<td>La corrección de un dato se registra como medición nueva y la anterior se marca como anulada</td>
+<td>Integridad</td>
+</tr>
+<tr>
+<td>RN-04</td>
+<td>Una alerta se genera solo si la regla está activa y se respeta su <em>cooldown</em></td>
+<td>Evitar fatiga de alertas</td>
+</tr>
+<tr>
+<td>RN-05</td>
+<td>Un dispositivo sin comunicación por más de 3× su intervalo de reporte se marca &quot;sin comunicación&quot;</td>
+<td>Operación AquaPlants</td>
+</tr>
+<tr>
+<td>RN-06</td>
+<td>El rol determina las acciones permitidas; ningún usuario puede elevar su propio rol ni eliminar su propia cuenta</td>
+<td>HU05 CA④</td>
+</tr>
+<tr>
+<td>RN-07</td>
+<td>Los umbrales son configurables por sensor o por tipo de variable (el sensor tiene prioridad)</td>
+<td>NEC-03</td>
+</tr>
+<tr>
+<td>RN-08</td>
+<td>Las marcas de tiempo se almacenan en UTC y se muestran en la zona horaria del usuario</td>
+<td>Trazabilidad</td>
+</tr>
+<tr>
+<td>RN-09</td>
+<td>Se rechaza toda medición con marca de tiempo futura (tolerancia por defecto: 5 min de desfase)</td>
+<td>HU08 CA③</td>
+</tr>
+<tr>
+<td>RN-10</td>
+<td>Se aceptan marcas de tiempo pasadas para permitir la sincronización de datos generados offline</td>
+<td>HU10 CA①</td>
+</tr>
+<tr>
+<td>RN-11</td>
+<td>El sistema de mediciones debe conservar el formato del firmware real (ESP32-S3) además del formato del simulador</td>
+<td>NEC-04, RF06</td>
+</tr>
+<tr>
+<td>RN-12</td>
+<td>La información del dashboard no debe contradecir lo que muestra el display OLED local del AquaBrain</td>
+<td>RNF05</td>
+</tr>
+</tbody></table>
+<h2 id="sec58">8.7. Verificación de cobertura y huecos</h2>
+<table>
+<thead>
+<tr>
+<th>Comprobación</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>¿Toda necesidad (NEC-01…NEC-09) tiene al menos una historia?</td>
+<td>✅ (NEC-09 se cubre como transversal con RNF04/RNF06)</td>
+</tr>
+<tr>
+<td>¿Toda HU tiene al menos un RF y un criterio de aceptación?</td>
+<td>✅ (HU09 → RF15, postergado)</td>
+</tr>
+<tr>
+<td>¿Todo RF tiene al menos una prueba asignada (salvo el Won&#39;t)?</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>¿Todo RNF tiene una decisión de diseño y una forma de verificación?</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>¿Todo CU tiene al menos una prueba (salvo CU-16 Won&#39;t)?</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>¿Existe alguna prueba sin necesidad asociada?</td>
+<td>✅ Ninguna: todas las pruebas tienen origen</td>
+</tr>
+</tbody></table>
+<p><strong>Huecos detectados y su tratamiento</strong> (transparencia sobre lo que no pudo confirmarse):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hueco</th>
+<th>Tratamiento</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>H-01</td>
+<td>El desafío menciona variables sin unidad definida; el hardware real solo cubre temperatura, humedad y distancia</td>
+<td>Real = AHT10/HC-SR04; pH y caudal se declaran <strong>simulados</strong> (<code>SUP-01</code>)</td>
+</tr>
+<tr>
+<td>H-02</td>
+<td>No se conoce el tiempo de retención real de los históricos</td>
+<td>Se fija en 24 meses como supuesto (<code>SUP-06</code>), parametrizable</td>
+</tr>
+<tr>
+<td>H-03</td>
+<td>No se confirmó si el acceso debe restringirse por sistema</td>
+<td>Simplificación documentada y supuesto (<code>SUP-05</code>)</td>
+</tr>
+<tr>
+<td>H-04</td>
+<td>La notificación externa (correo/SMS) no está exigida</td>
+<td>Se diseña la cola; se implementa como aviso en la interfaz</td>
+</tr>
+<tr>
+<td>H-05</td>
+<td>No está claro si un sensor puede asociarse a varios cultivos</td>
+<td>Se permite relación N:M, lo más flexible (<code>SUP-04</code>)</td>
+</tr>
+<tr>
+<td>H-06</td>
+<td>El contrato que consume hoy la app Android no está disponible</td>
+<td>Se asume <code>/api/v1</code> validado con la app de prueba (<code>SUP-10</code>)</td>
+</tr>
+<tr>
+<td>H-07</td>
+<td>El licenciamiento no está respaldado por el desafío</td>
+<td>HU09/RF15/CU-16 quedan <em>Won&#39;t por ahora</em> (<code>SUP-09</code>)</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>La verificación de cobertura demuestra dos cosas: que <strong>ninguna necesidad queda sin evidencia</strong> y
+que <strong>ninguna prueba queda sin origen</strong>. La matriz se mantiene viva y se actualiza al cambiar el
+alcance, siguiendo la regla de que el catálogo ES1 es la fuente de verdad que se propaga a ES2.</p>
+</blockquote>
+
+</section>
+<section class="doc">
+<h1 id="sec59">09 · Necesidades de seguridad de la información</h1>
+<h2 id="sec60">9.1. Importancia para el negocio</h2>
+<p>En AquaPlants los datos no son solo &quot;información&quot;: describen el <strong>estado de un cultivo</strong>. Un acceso
+indebido, una medición falsificada o una alerta suprimida pueden llevar a decisiones equivocadas de
+riego o nutrición y, en el peor caso, a la <strong>pérdida del cultivo</strong>. Además, la plataforma convive con
+<strong>tres clientes</strong> (navegador, app móvil y dispositivo) y con datos de usuarios, lo que amplía la
+superficie de ataque. Por eso la seguridad es un <strong>requisito transversal</strong> (RNF01, RNF11) y no una
+funcionalidad opcional.</p>
+<h2 id="sec61">9.2. Activos a proteger</h2>
+<table>
+<thead>
+<tr>
+<th>Activo</th>
+<th>Naturaleza</th>
+<th>Por qué importa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Datos de mediciones (temperatura, humedad, nivel/distancia, y variables simuladas)</td>
+<td>Operativo</td>
+<td>Reflejan el estado del cultivo; alterarlos induce malas decisiones</td>
+</tr>
+<tr>
+<td>Credenciales de usuarios</td>
+<td>Confidencial</td>
+<td>Su filtración da acceso a la plataforma</td>
+</tr>
+<tr>
+<td>Configuración de reglas de alerta</td>
+<td>Integridad</td>
+<td>Su manipulación produce alertas falsas o silencia alertas reales</td>
+</tr>
+<tr>
+<td>Comunicación dispositivo ↔ plataforma</td>
+<td>Integridad/Confidencial</td>
+<td>Una suplantación inyecta mediciones falsas</td>
+</tr>
+<tr>
+<td>App Android existente</td>
+<td>Confidencial</td>
+<td>Puede almacenar credenciales o tokens en el móvil</td>
+</tr>
+<tr>
+<td>Datos personales de usuarios (correo, nombre)</td>
+<td>Privacidad</td>
+<td>Su exposición incumple normativas de protección de datos</td>
+</tr>
+<tr>
+<td>Disponibilidad del servicio</td>
+<td>Operativo</td>
+<td>Sin servicio, no hay monitoreo</td>
+</tr>
+</tbody></table>
+<h2 id="sec62">9.3. Amenazas y riesgos</h2>
+<table>
+<thead>
+<tr>
+<th>Amenaza</th>
+<th>Riesgo asociado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Acceso no autorizado (externo o interno)</td>
+<td>Pérdida de confidencialidad; posible sabotaje del cultivo</td>
+</tr>
+<tr>
+<td>Filtración de contraseñas</td>
+<td>Acceso indebido a la plataforma</td>
+</tr>
+<tr>
+<td>Modificación malintencionada de reglas</td>
+<td>Alertas falsas o ausencia de alertas reales</td>
+</tr>
+<tr>
+<td>Suplantación del dispositivo o intercepción en tránsito</td>
+<td>Inyección de mediciones falsas; exposición de datos del cultivo</td>
+</tr>
+<tr>
+<td>Almacenamiento inseguro de tokens en el móvil</td>
+<td>Acceso indebido si el teléfono se pierde o es comprometido</td>
+</tr>
+<tr>
+<td>Exposición de datos personales</td>
+<td>Incumplimiento de normativas de privacidad</td>
+</tr>
+<tr>
+<td>Inyección de datos falsos o maliciosos por la API</td>
+<td>Saturación del sistema, históricos falsos, alertas erróneas</td>
+</tr>
+</tbody></table>
+<h2 id="sec63">9.4. Controles iniciales propuestos</h2>
+<p>La siguiente matriz relaciona cada activo con su amenaza, el riesgo, el control propuesto y su
+importancia relativa. Es la base de las decisiones de seguridad de ES2:</p>
+<table>
+<thead>
+<tr>
+<th>Activo</th>
+<th>Amenaza</th>
+<th>Riesgo</th>
+<th>Control propuesto</th>
+<th>Importancia</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Datos de mediciones</td>
+<td>Acceso no autorizado</td>
+<td>Pérdida de confidencialidad; sabotaje</td>
+<td>Autenticación JWT, control por roles, HTTPS</td>
+<td><strong>Crítica</strong></td>
+</tr>
+<tr>
+<td>Credenciales de usuarios</td>
+<td>Filtración de contraseñas</td>
+<td>Acceso indebido</td>
+<td>Hash <strong>bcrypt con salt</strong> y políticas de contraseñas seguras</td>
+<td><strong>Alta</strong></td>
+</tr>
+<tr>
+<td>Configuración de reglas de alerta</td>
+<td>Modificación malintencionada</td>
+<td>Alertas falsas o ausentes</td>
+<td>Autorización: solo el administrador modifica reglas</td>
+<td><strong>Media-Alta</strong></td>
+</tr>
+<tr>
+<td>Comunicación dispositivo ↔ plataforma</td>
+<td>Suplantación / intercepción</td>
+<td>Mediciones falsas; exposición</td>
+<td>API key por dispositivo, HTTPS/TLS, validación de origen</td>
+<td><strong>Alta</strong></td>
+</tr>
+<tr>
+<td>App Android existente</td>
+<td>Almacenamiento inseguro de credenciales</td>
+<td>Acceso indebido si se pierde el móvil</td>
+<td>Tokens de expiración corta, almacén seguro, cierre de sesión remoto</td>
+<td><strong>Media-Alta</strong></td>
+</tr>
+<tr>
+<td>Datos personales de usuarios</td>
+<td>Exposición de datos</td>
+<td>Incumplimiento normativo</td>
+<td>Almacenamiento mínimo necesario y logs de acceso</td>
+<td><strong>Media</strong></td>
+</tr>
+<tr>
+<td>API de ingesta</td>
+<td>Inyección de datos falsos</td>
+<td>Saturación, históricos falsos</td>
+<td>Validación de entrada, autenticación del dispositivo (API key)</td>
+<td><strong>Alta</strong></td>
+</tr>
+</tbody></table>
+<p>Los controles se pueden agrupar por tipo:</p>
+<ul>
+<li><strong>Preventivos:</strong> autenticación (JWT), autorización por roles (RBAC), hash de contraseñas, API key de
+dispositivo, validación y sanitización de entrada, HTTPS/TLS.</li>
+<li><strong>Detectivos:</strong> logs de auditoría, monitoreo del estado de conexión del dispositivo, registro de
+accesos y cambios.</li>
+<li><strong>De gestión:</strong> principio de <strong>mínimo privilegio</strong>, revisión periódica de permisos y política de
+tratamiento de datos.</li>
+</ul>
+<h2 id="sec64">9.5. Estándares y buenas prácticas de referencia</h2>
+<p>El diagnóstico adopta como referencia marcos reconocidos por la industria, sin declarar certificaciones
+que no se poseen:</p>
+<ul>
+<li><strong>OWASP Top Ten</strong> — para orientar la protección frente a las amenazas más comunes (inyección,
+autenticación deficiente, exposición de datos sensibles, control de acceso quebrado).</li>
+<li><strong>Principio de mínimo privilegio</strong> (RBAC) — cada usuario y cada cliente accede solo a lo necesario.</li>
+<li><strong>Seguridad desde el diseño (Zero Trust)</strong> — ninguna petición se considera confiable por defecto;
+toda llamada se autentica y valida, venga del navegador, del móvil o del dispositivo.</li>
+<li><strong>Normativa chilena de protección de datos</strong> — Ley <strong>19.628</strong> y Ley <strong>21.719</strong> como marco de
+privacidad y tratamiento de datos personales (ver capítulo 10).</li>
+</ul>
+<h2 id="sec65">9.6. Relación con los requerimientos</h2>
+<p>Estas necesidades se concretan en <strong>RNF01</strong> (seguridad) y <strong>RNF11</strong> (privacidad y cumplimiento), y se
+verifican mediante pruebas de acceso con distintos roles, pruebas básicas de penetración (SQLi, XSS) y
+revisión de los logs de auditoría. Su tratamiento ético y profesional se desarrolla en el capítulo
+siguiente.</p>
+
+</section>
+<section class="doc">
+<h1 id="sec66">10 · Impacto ético y profesional</h1>
+<h2 id="sec67">10.1. Marco de referencia</h2>
+<p>Las medidas de seguridad de un sistema que captura datos operativos y de usuarios no son solo una
+decisión técnica: tienen una <strong>dimensión ética y profesional</strong>. El equipo adopta como marco de
+referencia la <strong>normativa chilena de protección de datos personales</strong> —Ley <strong>19.628</strong> sobre vida
+privada y Ley <strong>21.719</strong> que moderniza su tratamiento— y las buenas prácticas de la industria
+(OWASP, principio de mínimo privilegio). El objetivo es que la plataforma <strong>trate los datos de forma
+justa, transparente y responsable</strong>.</p>
+<h2 id="sec68">10.2. Privacidad y minimización de datos</h2>
+<ul>
+<li>Se almacenan <strong>solo los datos necesarios</strong> de usuarios (nombre, correo, rol) y de cultivos
+(mediciones asociadas a sensores).</li>
+<li>Se aplica <strong>retención limitada</strong> y <strong>anonimización cuando sea posible</strong>; no se conservan datos más
+tiempo del necesario para la operación y el análisis.</li>
+<li>Los datos de cultivo (rendimiento, nutrientes) pueden tener <strong>valor comercial</strong>; su tratamiento se
+limita a los fines acordados con la empresa y <strong>no se comparten con terceros sin autorización</strong>.</li>
+</ul>
+<h2 id="sec69">10.3. Acceso y mínimo privilegio</h2>
+<ul>
+<li>El acceso se controla por <strong>roles</strong> (Encargado, Supervisor, Administrador): cada usuario ve y hace
+solo lo que le corresponde.</li>
+<li>Se aplica el <strong>principio de mínimo privilegio</strong> mediante RBAC, con <strong>revisión periódica</strong> de los
+permisos.</li>
+<li>Ningún usuario puede <strong>elevar su propio rol</strong> ni eliminar su propia cuenta (RN-06), lo que evita
+escaladas de privilegio.</li>
+</ul>
+<h2 id="sec70">10.4. Responsabilidad y trazabilidad</h2>
+<ul>
+<li>Se mantienen <strong>logs de auditoría</strong> y trazabilidad de cambios: quién hizo qué y cuándo.</li>
+<li>Todo <strong>incidente de seguridad</strong> se gestiona y documenta; la transparencia frente a la contraparte
+es parte del compromiso profesional.</li>
+<li>El histórico de mediciones es <strong>inmutable</strong> (RN-02): no se reescribe el pasado, se agrega un dato
+nuevo para corregir (RN-03), lo que protege la integridad de la evidencia.</li>
+</ul>
+<h2 id="sec71">10.5. Tratamiento y uso correcto de los datos</h2>
+<ul>
+<li><strong>Cifrado en tránsito</strong> (HTTPS/TLS) y, cuando corresponde, <strong>en reposo</strong>.</li>
+<li><strong>No reutilización indebida:</strong> los datos del cultivo se usan para mejorar la producción, no para
+fines ajenos a la relación con AquaPlants.</li>
+<li><strong>Calidad del dato:</strong> como las alertas dependen de datos confiables, se valida la entrada y se
+rechazan mediciones inconsistentes (por ejemplo, marcas de tiempo futuras).</li>
+</ul>
+<h2 id="sec72">10.6. Impacto ético y profesional de cada medida</h2>
+<table>
+<thead>
+<tr>
+<th>Medida de seguridad</th>
+<th>Impacto ético</th>
+<th>Impacto profesional</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Autenticación y roles (RBAC)</strong></td>
+<td>Garantiza que cada usuario acceda solo a lo que le compete, respetando la privacidad del cultivo y del personal</td>
+<td>Alinea con el principio de mínimo privilegio, estándar de la industria</td>
+</tr>
+<tr>
+<td><strong>HTTPS y cifrado</strong></td>
+<td>Evita que terceros intercepten información sensible (por ejemplo, niveles de nutrientes con valor comercial)</td>
+<td>Demuestra responsabilidad en el manejo de datos y cumple buenas prácticas</td>
+</tr>
+<tr>
+<td><strong>Validación de entrada y sanitización</strong></td>
+<td>Previene que el sistema se use para ataques que podrían alterar valores de riego y dañar el cultivo</td>
+<td>Refleja un enfoque proactivo y evita la negligencia en el desarrollo</td>
+</tr>
+<tr>
+<td><strong>Hash de contraseñas (bcrypt)</strong></td>
+<td>Protege la identidad de los usuarios ante una eventual brecha</td>
+<td>Cumple con estándares de seguridad reconocidos (OWASP, NIST)</td>
+</tr>
+<tr>
+<td><strong>Logs de auditoría</strong></td>
+<td>Permite identificar acciones indebidas y responsabilizar, promoviendo la transparencia</td>
+<td>Facilita el cumplimiento normativo y la confianza de la contraparte</td>
+</tr>
+<tr>
+<td><strong>API key por dispositivo</strong></td>
+<td>Evita que un tercero se haga pasar por un AquaBrain e inyecte datos falsos</td>
+<td>Protege la integridad del ecosistema hardware–software de la empresa</td>
+</tr>
+</tbody></table>
+<h2 id="sec73">10.7. Impacto en las personas y en el negocio</h2>
+<p>Un fallo de seguridad <strong>no solo expone datos</strong>: puede afectar <strong>decisiones de cultivo</strong>, la <strong>confianza
+en la plataforma</strong> y la <strong>continuidad operativa</strong> de AquaPlants. Además, la plataforma está pensada
+para <strong>usuarios no técnicos</strong> (encargados de cultivo): la seguridad debe ser <strong>invisible y no estorbar</strong>
+la operación diaria, y los mensajes de error deben ser claros sin revelar información sensible. Este
+equilibrio entre protección y usabilidad es, en sí mismo, una decisión ética y profesional.</p>
+<blockquote>
+<p><strong>Compromiso del equipo.</strong> Tratar los datos de AquaPlants con el mismo cuidado con que se tratan
+datos personales, documentar las decisiones de seguridad, no ocultar brechas y diseñar pensando en
+el usuario final, no solo en el requisito técnico.</p>
+</blockquote>
+
+</section>
+<section class="doc">
+<h1 id="sec74">11 · Conclusiones</h1>
+<h2 id="sec75">11.1. Qué se logró</h2>
+<p>El equipo completó el <strong>diagnóstico del problema informático</strong> de AquaPlants/AquaBrain y lo tradujo
+en decisiones de ingeniería verificables y trazables:</p>
+<ul>
+<li><strong>9 necesidades TI</strong> identificadas y priorizadas con <strong>MoSCoW</strong> sobre cuatro criterios (valor,
+urgencia, riesgo y factibilidad).</li>
+<li><strong>11 historias de usuario</strong> en formato rol–característica–razón, con criterios de aceptación
+numerados y verificables.</li>
+<li><strong>15 requerimientos funcionales</strong> y <strong>11 no funcionales</strong>, clasificados, priorizados y con forma de
+verificación.</li>
+<li><strong>16 casos de uso</strong> y <strong>12 reglas de negocio</strong> que completan el dominio.</li>
+<li>Una <strong>metodología seleccionada y justificada</strong> (Scrum, 27 puntos frente a Scrumban 25 y Kanban 22)
+mediante criterios y puntajes homogéneos.</li>
+<li>Un <strong>análisis de seguridad</strong> con activos, amenazas, riesgos y controles, y su <strong>impacto ético y
+profesional</strong>.</li>
+<li>Una <strong>matriz de trazabilidad</strong> que conecta cada necesidad con su evidencia final.</li>
+</ul>
+<h2 id="sec76">11.2. Decisiones clave y su fundamento</h2>
+<table>
+<thead>
+<tr>
+<th>Decisión</th>
+<th>Fundamento</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Priorizar con MoSCoW</td>
+<td>Permite distinguir el núcleo del MVP de lo que puede esperar, con evidencia de negocio</td>
+</tr>
+<tr>
+<td>Modelar el dominio de forma relacional</td>
+<td>Los datos son inherentemente relacionales (sistema → dispositivo → sensor → medición)</td>
+</tr>
+<tr>
+<td>Incluir la máquina como actor</td>
+<td>El firmware real y el simulador tienen necesidades propias que se traducen en requisitos</td>
+</tr>
+<tr>
+<td>Distinguir variables reales de simuladas</td>
+<td>Evita atribuir al sistema datos que el hardware no produce</td>
+</tr>
+<tr>
+<td>Elegir Scrum</td>
+<td>Mayor puntaje y mejor ajuste a un equipo pequeño con incertidumbre técnica y hitos fijos</td>
+</tr>
+<tr>
+<td>Declarar lo &quot;Won&#39;t&quot; explícitamente</td>
+<td>Convierte las exclusiones en decisiones de alcance, no en olvidos</td>
+</tr>
+</tbody></table>
+<h2 id="sec77">11.3. Cumplimiento de la rúbrica</h2>
+<p>Los quince indicadores de la evaluación ES1 quedan cubiertos por capítulos concretos (ver Anexo C).
+El criterio de calidad transversal —<strong>trazabilidad y coherencia</strong>— se satisface porque la cadena
+necesidad → historia → requisito → caso de uso → diseño → implementación → prueba <strong>cierra de extremo
+a extremo</strong> para todos los requisitos vigentes (Must y Should), y lo que no se implementó (<em>Won&#39;t</em>)
+se declara como tal.</p>
+<h2 id="sec78">11.4. Límites y supuestos abiertos</h2>
+<p>El diagnóstico es honesto respecto de lo que <strong>no</strong> pudo confirmarse:</p>
+<ul>
+<li>El levantamiento fue <strong>documental</strong>; no hubo entrevistas formales, por lo que aspectos operativos
+(frecuencia de envío, umbrales, retención, relación cultivo–sensor) quedan como <strong>supuestos a
+validar</strong> con la contraparte.</li>
+<li>Variables como <strong>pH y caudal</strong> se declaran <strong>simuladas</strong> por ausencia de sensor físico.</li>
+<li>La <strong>escalabilidad masiva</strong>, la <strong>autonomía local del firmware</strong> y el <strong>licenciamiento</strong> quedan
+fuera del alcance por ahora.</li>
+</ul>
+<h2 id="sec79">11.5. Trabajo futuro inmediato</h2>
+<ol>
+<li><strong>Cerrar los supuestos</strong> con la contraparte (ocho aspectos listados en el capítulo 01 §1.6).</li>
+<li>Trasladar este diagnóstico al <strong>diseño (ES2)</strong>: arquitectura 4+1, modelo de datos, wireframes y
+plan de pruebas, manteniendo los identificadores estables.</li>
+<li>Sostener la <strong>matriz de trazabilidad viva</strong> durante todo el semestre.</li>
+</ol>
+<h2 id="sec80">11.6. Cierre</h2>
+<p>El diagnóstico demuestra que el equipo <strong>comprende el problema antes de diseñar o programar</strong>: no
+parte de la tecnología, sino de las necesidades del negocio; no inventa datos, sino que declara lo
+real y lo simulado; y no acumula requisitos, sino que los prioriza y los traza. Este es el fundamento
+sobre el que se construirán el diseño, la implementación y el cierre del proyecto.</p>
+
+</section>
+<section class="doc">
+<h1 id="sec81">12 · Bibliografía</h1>
+<p>Las referencias se presentan en formato <strong>APA 7.ª edición</strong>. Se distinguen las <strong>fuentes del
+proyecto</strong> (documentos entregados por la empresa o el docente) de las <strong>referencias externas</strong>
+(estándares, marcos y normativa).</p>
+<h2 id="sec82">12.1. Fuentes del proyecto</h2>
+<p>AquaPlants / AquaBrain — Robotic Systems. (2026). <em>Desafío para estudiantes de 4.º semestre:
+Plataforma web de monitoreo y gestión de cultivos aeropónico (AquaPlants / AquaBrain)</em>, rev. 1
+[Documento del desafío]. Incluye contexto, actores, dominio, MVP, restricciones, escala esperada y
+antecedentes base entregados por la empresa.</p>
+<p>Brun Ruth, A. V. (2026). <em>Material técnico y datasets – Proyectos AZA y AQUAPLANTS</em> [Comunicación
+institucional]. Antecedentes de firmware (ESP32-S3), sensores y app Android de prueba.</p>
+<p>INACAP. (2026). <em>Evaluación 1 — Unidad 1 (Sumativa): Diagnóstico del problema informático (ES1)</em>
+[Instrumento de evaluación y rúbrica]. Indicadores 1.1.1.1 a 1.1.5.15.</p>
+<p>INACAP. (2026). <em>Corrección 1ª evaluación (correcion 1eval1)</em> [Retroalimentación docente]. Ajustes de
+priorización MoSCoW, comparación de metodologías, impacto ético, unificación de códigos y decisión de
+licenciamiento.</p>
+<p>INACAP. (2026). <em>Corrección 2ª evaluación (correcion 2eval1)</em> [Retroalimentación docente]. Ampliación
+de criterios de aceptación, matriz MoSCoW de requisitos y RNF11.</p>
+<p>Equipo de proyecto. (2026). <em>ES1 — Catálogo base consolidado (versión corregida)</em>
+(<code>docs/ES1/00-backlog-base.md</code>) [Documento interno]. Fuente de verdad de identificadores NEC, HU, RF,
+RNF, CU y RN.</p>
+<p>Equipo de proyecto. (2026). <em>ES1 — Correcciones aplicadas</em> (<code>docs/ES1/01-correcciones-aplicadas.md</code>)
+[Documento interno]. Trazabilidad del feedback C-01…C-08.</p>
+<p>Equipo de proyecto. (2026). <em>ES2 — Matriz de trazabilidad</em> (<code>docs/ES2/08-trazabilidad.md</code>)
+[Documento interno]. Cadena necesidad → historia → requisito → caso de uso → diseño → implementación →
+prueba.</p>
+<h2 id="sec83">12.2. Estándares, marcos y buenas prácticas</h2>
+<p>International Organization for Standardization. (2011). <em>ISO/IEC 25010:2011 — Systems and software
+engineering: Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software
+quality models</em>. ISO.</p>
+<p>OWASP Foundation. (2021). <em>OWASP Top 10:2021 — The ten most critical web application security risks</em>.
+<a href="https://owasp.org/Top10/">https://owasp.org/Top10/</a></p>
+<p>OpenAPI Initiative. (2021). <em>OpenAPI Specification v3.0.3</em>. <a href="https://spec.openapis.org/oas/v3.0.3">https://spec.openapis.org/oas/v3.0.3</a></p>
+<p>Schwaber, K., &amp; Sutherland, J. (2020). <em>La Guía de Scrum: La guía definitiva de Scrum</em>.
+<a href="https://scrumguides.org/">https://scrumguides.org/</a></p>
+<p>Anderson, D. J. (2010). <em>Kanban: Successful evolutionary change for your technology business</em>. Blue
+Hole Press.</p>
+<h2 id="sec84">12.3. Ingeniería de software (métodos de análisis y especificación)</h2>
+<p>Pressman, R. S., &amp; Maxim, B. R. (2020). <em>Ingeniería del software: Un enfoque práctico</em> (9.ª ed.).
+McGraw-Hill.</p>
+<p>Sommerville, I. (2016). <em>Software engineering</em> (10.ª ed.). Pearson.</p>
+<p>Cohn, M. (2004). <em>User stories applied: For agile software development</em>. Addison-Wesley.</p>
+<h2 id="sec85">12.4. Normativa chilena de protección de datos</h2>
+<p>Ministerio Secretaría General de la Presidencia. (1999). <em>Ley N.º 19.628 sobre protección de la vida
+privada</em> [Chile]. Biblioteca del Congreso Nacional de Chile. <a href="https://www.bcn.cl/leychile">https://www.bcn.cl/leychile</a></p>
+<p>Ministerio de Economía, Fomento y Turismo. (2024). <em>Ley N.º 21.719 que regula la protección y el
+tratamiento de los datos personales</em> [Chile]. Biblioteca del Congreso Nacional de Chile.
+<a href="https://www.bcn.cl/leychile">https://www.bcn.cl/leychile</a></p>
+<hr>
+<blockquote>
+<p><strong>Nota sobre fuentes.</strong> Las cifras y decisiones de este informe provienen de los documentos del
+proyecto y de las fuentes externas aquí listadas. Cuando un dato no pudo confirmarse con la
+contraparte, se declaró como <strong>supuesto</strong> (capítulo 01 §1.6 y capítulo 08 §8.7) en lugar de
+presentarse como un hecho.</p>
+</blockquote>
+
+</section>
+<section class="doc">
+<h1 id="sec86">13 · Anexos</h1>
+<h2 id="sec87">Anexo A · Glosario</h2>
+<table>
+<thead>
+<tr>
+<th>Término</th>
+<th>Definición</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AquaBrain</strong></td>
+<td>Placa electrónica (ESP32-S3) que sensa variables del cultivo y las transmite a la capa digital</td>
+</tr>
+<tr>
+<td><strong>AquaPlants</strong></td>
+<td>Producto de cultivo hidropónico/aeropónico vertical que integra física, electrónica y software</td>
+</tr>
+<tr>
+<td><strong>AHT10</strong></td>
+<td>Sensor real de temperatura y humedad</td>
+</tr>
+<tr>
+<td><strong>HC-SR04</strong></td>
+<td>Sensor real de distancia ultrasónica, usado como referencia de nivel</td>
+</tr>
+<tr>
+<td><strong>API-first</strong></td>
+<td>Enfoque en que la funcionalidad se expone mediante un contrato de API estable y documentado</td>
+</tr>
+<tr>
+<td><strong>MoSCoW</strong></td>
+<td>Técnica de priorización: Must / Should / Could / Won&#39;t</td>
+</tr>
+<tr>
+<td><strong>MVP</strong></td>
+<td>Producto mínimo viable: conjunto de funcionalidades esencial para que la solución sea útil</td>
+</tr>
+<tr>
+<td><strong>Mocking</strong></td>
+<td>Técnica de prueba que reemplaza dependencias reales</td>
+</tr>
+<tr>
+<td><strong>RBAC</strong></td>
+<td>Control de acceso basado en roles</td>
+</tr>
+<tr>
+<td><strong>RF / RNF</strong></td>
+<td>Requerimiento funcional / no funcional</td>
+</tr>
+<tr>
+<td><strong>Slice / Sprint</strong></td>
+<td>Iteración de duración fija en Scrum</td>
+</tr>
+<tr>
+<td><strong>TS</strong></td>
+<td>Caso de prueba (test case)</td>
+</tr>
+<tr>
+<td><strong>Timestamp</strong></td>
+<td>Marca temporal de una medición</td>
+</tr>
+<tr>
+<td><strong>Store-and-forward</strong></td>
+<td>Estrategia de almacenar datos localmente y reenviarlos al recuperar conexión</td>
+</tr>
+</tbody></table>
+<h2 id="sec88">Anexo B · Convenciones de identificadores</h2>
+<table>
+<thead>
+<tr>
+<th>Prefijo</th>
+<th>Significado</th>
+<th>Formato</th>
+<th>Cantidad</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NEC-xx</code></td>
+<td>Necesidad TI</td>
+<td><code>NEC-01</code> … <code>NEC-09</code></td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>HUxx</code></td>
+<td>Historia de usuario</td>
+<td><code>HU01</code> … <code>HU11</code></td>
+<td>11</td>
+</tr>
+<tr>
+<td><code>RFxx</code></td>
+<td>Requerimiento funcional</td>
+<td><code>RF01</code> … <code>RF15</code></td>
+<td>15</td>
+</tr>
+<tr>
+<td><code>RNFxx</code></td>
+<td>Requerimiento no funcional</td>
+<td><code>RNF01</code> … <code>RNF11</code></td>
+<td>11</td>
+</tr>
+<tr>
+<td><code>CU-xx</code></td>
+<td>Caso de uso</td>
+<td><code>CU-01</code> … <code>CU-16</code></td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>RN-xx</code></td>
+<td>Regla de negocio</td>
+<td><code>RN-01</code> … <code>RN-12</code></td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>TS-xx</code></td>
+<td>Caso de prueba (referencia ES2/ES3)</td>
+<td><code>TS-01</code> … <code>TS-44</code></td>
+<td>44</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Los identificadores <strong>no llevan guion</strong> entre las letras y el número (<code>HU01</code>, <code>RF07</code>), salvo <code>NEC</code>,
+<code>CU</code>, <code>RN</code> y <code>TS</code>, que sí lo llevan. Esta convención única fue aplicada como parte de la corrección
+C-08 y se mantiene en todos los documentos del proyecto.</p>
+</blockquote>
+<h2 id="sec89">Anexo C · Cobertura detallada de la rúbrica</h2>
+<table>
+<thead>
+<tr>
+<th>Indicador</th>
+<th>Evidencia concreta</th>
+<th>Ubicación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.1.1.1 Necesidades TI con buenas prácticas</td>
+<td>Matriz NEC-01…NEC-09 con problema, necesidad, prioridad y evidencia; alineada con patrones de series temporales y RBAC</td>
+<td>Cap. 03 §3.2 · Cap. 04</td>
+</tr>
+<tr>
+<td>1.1.1.2 Tendencias TI aplicables</td>
+<td>7 tendencias adoptadas y 5 descartadas, con impacto explícito</td>
+<td>Cap. 04 §4.2, §4.3</td>
+</tr>
+<tr>
+<td>1.1.1.3 Priorización justificada</td>
+<td>Priorización MoSCoW por valor, urgencia, riesgo y factibilidad</td>
+<td>Cap. 03 §3.3</td>
+</tr>
+<tr>
+<td>1.1.2.4 Historias claras y detalladas</td>
+<td>Backlog HU01…HU11 en formato rol–característica–razón</td>
+<td>Cap. 06 §6.2</td>
+</tr>
+<tr>
+<td>1.1.2.5 Roles, objetivos y criterios</td>
+<td>Cada HU declara rol, característica, razón y CA numerados</td>
+<td>Cap. 06 §6.2</td>
+</tr>
+<tr>
+<td>1.1.2.6 Adaptación al negocio</td>
+<td>Tabla de aspectos específicos de AquaPlants y la HU que los recoge</td>
+<td>Cap. 06 §6.3</td>
+</tr>
+<tr>
+<td>1.1.3.7 Clasificación RF/RNF</td>
+<td>Catálogos RF01…RF15 y RNF01…RNF11 con criterio de clasificación</td>
+<td>Cap. 07 §7.1–§7.3</td>
+</tr>
+<tr>
+<td>1.1.3.8 Ejemplos de cada tipo</td>
+<td>2 RF y 2 RNF explicados con su relevancia</td>
+<td>Cap. 07 §7.4</td>
+</tr>
+<tr>
+<td>1.1.3.9 Trazabilidad</td>
+<td>Matriz necesidad → historia → requisito → CU → diseño → implementación → prueba</td>
+<td>Cap. 08 §8.2</td>
+</tr>
+<tr>
+<td>1.1.4.10 Selección de metodología</td>
+<td>Scrum seleccionada con justificación de idoneidad</td>
+<td>Cap. 05 §5.5</td>
+</tr>
+<tr>
+<td>1.1.4.11 Justificación según cliente</td>
+<td>Justificación vinculada a equipo, alcance, incertidumbre y contraparte</td>
+<td>Cap. 05 §5.5</td>
+</tr>
+<tr>
+<td>1.1.4.12 Comparación de alternativas</td>
+<td>Comparación cuantitativa (27/25/22) y cualitativa con descartes</td>
+<td>Cap. 05 §5.3, §5.4</td>
+</tr>
+<tr>
+<td>1.1.5.13 Seguridad TI</td>
+<td>Activos, amenazas, riesgos y controles iniciales</td>
+<td>Cap. 09</td>
+</tr>
+<tr>
+<td>1.1.5.14 Impacto ético y profesional</td>
+<td>Privacidad, acceso, responsabilidad, tratamiento y cumplimiento</td>
+<td>Cap. 10</td>
+</tr>
+<tr>
+<td>1.1.5.15 Preguntas y justificación</td>
+<td>Trazabilidad, conclusiones y defensa de decisiones</td>
+<td>Cap. 08, 11 y este anexo</td>
+</tr>
+</tbody></table>
+<h2 id="sec90">Anexo D · Correcciones docentes aplicadas (C-01…C-08)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Origen</th>
+<th>Corrección solicitada</th>
+<th>Cómo se aplicó</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>C-01</strong></td>
+<td><code>correcion 1eval1</code></td>
+<td>Priorizar con <strong>MoSCoW</strong></td>
+<td>NEC y RF/RNF priorizados con justificación por valor, urgencia, riesgo y factibilidad</td>
+</tr>
+<tr>
+<td><strong>C-02</strong></td>
+<td><code>correcion 1eval1</code></td>
+<td>Comparar metodologías con <strong>criterios y puntajes homogéneos</strong></td>
+<td>6 criterios en escala 1–5 → Scrum 27 · Scrumban 25 · Kanban 22</td>
+</tr>
+<tr>
+<td><strong>C-03</strong></td>
+<td><code>correcion 1eval1</code></td>
+<td>Agregar <strong>impacto ético y profesional</strong></td>
+<td>Cap. 10 con privacidad, responsabilidad, acceso, tratamiento, cumplimiento e impacto profesional</td>
+</tr>
+<tr>
+<td><strong>C-04</strong></td>
+<td><code>correcion 1eval1</code></td>
+<td>Eliminar <strong>HU11 inexistente</strong>; crearla si se requiere</td>
+<td>HU11 (documentación de API) creada; RF renumerados</td>
+</tr>
+<tr>
+<td><strong>C-05</strong></td>
+<td><code>correcion 1eval1</code></td>
+<td>Decidir el <strong>licenciamiento</strong></td>
+<td>HU09 / RF15 movidos a <em>Won&#39;t (por ahora)</em>; supuesto <code>SUP-09</code></td>
+</tr>
+<tr>
+<td><strong>C-06</strong></td>
+<td><code>correcion 2eval1</code></td>
+<td>Ampliar <strong>criterios de aceptación</strong></td>
+<td>Cada HU con CA numerados y verificables (fecha/hora, exportación, severidad, códigos HTTP, etc.)</td>
+</tr>
+<tr>
+<td><strong>C-07</strong></td>
+<td><code>correcion 2eval1</code></td>
+<td>Añadir <strong>RNF11 (privacidad y cumplimiento)</strong></td>
+<td>RNF11 (<em>Must</em>) con minimización, retención, logs y referencia a Ley 19.628/21.719</td>
+</tr>
+<tr>
+<td><strong>C-08</strong></td>
+<td><code>correcion 2eval1</code></td>
+<td><strong>Unificar los códigos</strong> RF/RNF/HU</td>
+<td>Único conjunto de identificadores en todas las tablas</td>
+</tr>
+</tbody></table>
+<p>Estado: <strong>C-01 … C-08 aplicadas</strong>. Detalle completo en <code>docs/ES1/01-correcciones-aplicadas.md</code>.</p>
+<h2 id="sec91">Anexo E · Supuestos y validaciones pendientes</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Supuesto</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SUP-01</td>
+<td>Variables sin sensor físico (pH, caudal) se tratan como <strong>simuladas</strong></td>
+<td>⏳ Validar</td>
+</tr>
+<tr>
+<td>SUP-04</td>
+<td>Un sensor puede asociarse a más de un cultivo (relación N:M)</td>
+<td>⏳ Validar</td>
+</tr>
+<tr>
+<td>SUP-05</td>
+<td>El acceso no se restringe por sistema en el MVP (simplificación)</td>
+<td>⏳ Validar</td>
+</tr>
+<tr>
+<td>SUP-06</td>
+<td>Retención de históricos fijada en 24 meses, parametrizable</td>
+<td>⏳ Validar</td>
+</tr>
+<tr>
+<td>SUP-09</td>
+<td>El licenciamiento (HU09/RF15) no está respaldado por el desafío</td>
+<td>⏳ Validar</td>
+</tr>
+<tr>
+<td>SUP-10</td>
+<td>Compatibilidad con la app Android &quot;sin cambios&quot;: no se dispone del contrato actual</td>
+<td>⏳ Validar</td>
+</tr>
+</tbody></table>
+<p>Los ocho aspectos a validar con la contraparte se listan en el capítulo 01 §1.6. El resto de los
+supuestos (<code>SUP-01…SUP-10</code>) se administra en <code>docs/ES2/09-feedback-prototipo.md</code>.</p>
+<h2 id="sec92">Anexo F · Sobre este informe</h2>
+<ul>
+<li><strong>Naturaleza:</strong> presentación académica del diagnóstico ES1. No redefine identificadores; el catálogo
+canónico es <code>docs/ES1/00-backlog-base.md</code>.</li>
+<li><strong>Cómo se generó:</strong> a partir del análisis documental de las fuentes del proyecto (capítulo 12),
+respetando la regla de <strong>no inventar cifras ni contenido</strong>.</li>
+<li><strong>Qué no cubre:</strong> el diseño detallado (ES2), la implementación y las pruebas ejecutadas (ES3) y el
+cierre (ES4); las referencias a esos artefactos en la matriz de trazabilidad son <strong>forward
+references</strong> que demuestran la coherencia de la cadena.</li>
+<li><strong>Mantenimiento:</strong> si cambia un identificador o una prioridad, se actualiza primero el catálogo
+canónico y luego se propaga a los demás documentos.</li>
+</ul>
+
+</section>
+
+</div>
+
+<script type="module">
+  try {
+    const m = await import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs");
+    m.default.initialize({ startOnLoad: false, securityLevel: "loose", theme: "neutral" });
+    await m.default.run({ querySelector: "pre.mermaid" });
+  } catch (e) {
+    console.warn("Mermaid no disponible (¿sin conexión?). Se muestra el código del diagrama.", e);
+  }
+</script>
+</body>
+</html>
