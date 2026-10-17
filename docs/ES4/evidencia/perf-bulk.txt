@@ -1,0 +1,23 @@
+POST /mediciones/bulk — lote de 500 lecturas (sensor TEMP-01 / dispositivo DEV-01)
+Cuerpo: 78,5 KB  (cada lectura con idExterno único y origen OFFLINE)
+
+ANTES de R-01 (una transacción de escritura por lectura)
+  HTTP 207 esperado. Tiempo total: 16410 ms
+
+DESPUÉS de R-01 (inserción masiva createManyAndReturn + reglas en un paso por lote)
+  HTTP 207 esperado. Tiempo total: 1697 ms
+  HTTP 207 esperado. Tiempo total: 1403 ms
+  HTTP 207 esperado. Tiempo total: 1275 ms
+  Mediana de 3 corridas: 1403 ms  (≈12× más rápido)
+
+Cuerpo de la respuesta (207 Multi-Status)
+{
+    "recibidas":  500,
+    "aceptadas":  500,
+    "duplicadas":  0,
+    "rechazadas":  0,
+    "muestraRechazos":  [
+
+                        ],
+    "alertasGeneradas":  0
+}

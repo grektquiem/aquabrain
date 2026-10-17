@@ -1,0 +1,11 @@
+
+endpoint                      muestras min_ms p50_ms p95_ms max_ms bytes
+--------                      -------- ------ ------ ------ ------ -----
+GET /dashboard/estado               25   88,4  104,1  225,9  328,8  3642
+GET /mediciones/serie (1 mes)       25  231,5  573,7  633,8  730,4 77231
+GET /alertas?porPagina=20           25   59,2   64,8   86,2   91,8  2017
+
+
+
+Rango consultado (1 mes): 2026-09-17T01:30:54.364Z  ->  2026-10-17T01:30:54.333Z
+Total mediciones en la tabla: 52230
