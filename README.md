@@ -7,7 +7,7 @@ Proyecto académico de **Proyecto Integrado** (4.º semestre) para el desafío *
 | **Equipo** | Benjamín Alfonso Espinoza Gangas · Luis Humberto Pizarro Muñoz · Rodrigo Andrés Terraza Herrera |
 | **Docente** | Armin Vladimir Brunt Ruth |
 | **Hardware real del cliente** | ESP32-S3 + AHT10 + HC-SR04 + display OLED SSD1309 + joystick; app Android 14 de prueba |
-| **Estado actual** | ES1 corregido y **ES2 — Diseño de la solución de software** |
+| **Estado actual** | ES1 corregido, **ES2 — Diseño de la solución de software** y **ES3 — Implementación de la solución de software** |
 
 ---
 
@@ -30,6 +30,14 @@ Proyecto académico de **Proyecto Integrado** (4.º semestre) para el desafío *
 | [`docs/ES2/09-feedback-prototipo.md`](docs/ES2/09-feedback-prototipo.md) | Supuestos abiertos y registro de retroalimentación con cambios aplicados | ES2 |
 | [`docs/ES2/10-checklist-entrega.md`](docs/ES2/10-checklist-entrega.md) | Checklist de cobertura de la rúbrica (indicadores 2.1.1.1…2.1.6.15) y control de calidad | ES2 |
 | [`docs/ES2/11-defensa-preguntas.md`](docs/ES2/11-defensa-preguntas.md) | Banco de preguntas y respuestas para la defensa (indicador 2.1.6.15) | ES2 |
+| [`docs/ES3/00-portada-y-resumen.md`](docs/ES3/00-portada-y-resumen.md) | **Implementación**: portada, resumen ejecutivo con métricas reales e índice de las 16 secciones | ES3 |
+| [`docs/ES3/01-introduccion.md`](docs/ES3/01-introduccion.md) … [`16-anexos.md`](docs/ES3/16-anexos.md) | Informe de implementación: repositorio, backend, frontend, simulador, base de datos, seguridad, despliegue, pruebas, resultados, discrepancias, recomendaciones, trazabilidad, conclusiones, bibliografía y anexos | ES3 |
+| [`docs/ES3/ES3-AquaBrain-entrega.html`](docs/ES3/ES3-AquaBrain-entrega.html) | Documento ES3 compilado (autocontenido) | ES3 |
+| [`apps/api`](apps/api) | **API NestJS**: 35 rutas, 21 permisos, autenticación JWT + RBAC, ingesta idempotente, alertas y auditoría | ES3 |
+| [`apps/web`](apps/web) | **Dashboard React**: panel en vivo, históricos con gráficos y CSV, bandeja de alertas | ES3 |
+| [`apps/simulator`](apps/simulator) | **Simulador del gateway** ESP32-S3 (modos online/offline/anomalía) | ES3 |
+| [`packages/shared`](packages/shared) | **Esquemas Zod** compartidos (fuente de verdad del contrato) | ES3 |
+| [`infra`](infra) | **Docker Compose** (API + PostgreSQL + dashboard) y CI en GitHub Actions | ES3 |
 
 ---
 
