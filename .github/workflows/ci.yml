@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Un push nuevo cancela la ejecución anterior de la misma rama.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calidad:
+    name: Compilación, pruebas y cobertura
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aquabrain
+          POSTGRES_PASSWORD: aquabrain
+          POSTGRES_DB: aquabrain
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aquabrain -d aquabrain"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      NODE_ENV: test
+      PORT: '3000'
+      API_PREFIX: api/v1
+      LOG_LEVEL: warn
+      DATABASE_URL: postgresql://aquabrain:aquabrain@localhost:5432/aquabrain?schema=public
+      JWT_ACCESS_SECRET: ci_access_secret_para_pruebas_con_mas_de_32_bytes
+      JWT_REFRESH_SECRET: ci_refresh_secret_para_pruebas_con_mas_de_32_bytes
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      BCRYPT_COST: '4'
+      DEVICE_KEY_PEPPER: ci_pepper_para_pruebas_con_mas_de_32_bytes_ok
+      ALERT_SILENCE_FACTOR: '3'
+      MAX_TIMESTAMP_SKEW: 5m
+      BODY_LIMIT: 1mb
+      CORS_ORIGINS: http://localhost:5173
+
+    defaults:
+      run:
+        working-directory: apps/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Instalar dependencias (workspaces)
+        working-directory: .
+        run: npm ci
+
+      - name: Compilar @aquabrain/shared
+        working-directory: .
+        run: npm run build --workspace @aquabrain/shared
+
+      - name: Verificar tipos de la API
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Aplicar migraciones y sembrar datos mínimos
+        run: |
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      - name: Pruebas unitarias y de integración + cobertura combinada (umbral TS-44)
+        run: npm run test:cov
+
+      - name: subir artefactos de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-combinada
+          path: apps/api/coverage/combinado
+          if-no-files-found: warn
+
+  web:
+    name: Compilación del dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Instalar dependencias (workspaces)
+        working-directory: .
+        run: npm ci
+      - name: Verificar tipos y compilar
+        run: npm run build

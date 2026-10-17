@@ -1,0 +1,67 @@
+# AquaBrain — pila completa (PostgreSQL + API NestJS + dashboard nginx).
+#
+#   docker compose --env-file infra/.env -f infra/docker-compose.yml up --build
+#
+# `infra/.env` NO se versiona (ver .gitignore); use `infra/.env.example` como base.
+name: aquabrain
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: aquabrain-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aquabrain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aquabrain}
+      POSTGRES_DB: ${POSTGRES_DB:-aquabrain}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-aquabrain} -d ${POSTGRES_DB:-aquabrain}']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/api.Dockerfile
+    container_name: aquabrain-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      API_PREFIX: api/v1
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aquabrain}:${POSTGRES_PASSWORD:-aquabrain}@db:5432/${POSTGRES_DB:-aquabrain}?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?defina JWT_ACCESS_SECRET en infra/.env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?defina JWT_REFRESH_SECRET en infra/.env}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      BCRYPT_COST: ${BCRYPT_COST:-12}
+      DEVICE_KEY_PEPPER: ${DEVICE_KEY_PEPPER:?defina DEVICE_KEY_PEPPER en infra/.env}
+      ALERT_SILENCE_FACTOR: ${ALERT_SILENCE_FACTOR:-3}
+      MAX_TIMESTAMP_SKEW: ${MAX_TIMESTAMP_SKEW:-5m}
+      BODY_LIMIT: ${BODY_LIMIT:-1mb}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+    ports:
+      - '${API_PORT:-3000}:3000'
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/web.Dockerfile
+    container_name: aquabrain-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '${WEB_PORT:-8080}:80'
+
+volumes:
+  dbdata:
