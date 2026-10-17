@@ -179,8 +179,78 @@ describe('Ingesta de mediciones (e2e)', () => {
     }
   });
 
-  // ── TS-30 · lote sobredimensionado ───────────────────────────────────────
+  // ── R-01 · idempotencia dentro del mismo lote ────────────────────────────
 
+  it('un idExterno repetido dentro del mismo lote cuenta una sola vez', async () => {
+    const t = await crearTenant(app, 'loteidem', ['TEMP-01']);
+    try {
+      const base = Date.now() - 60_000;
+      const items = [
+        { sensorCodigo: 'TEMP-01', valor: 24, timestamp: new Date(base).toISOString(), idExterno: 'repetido' },
+        { sensorCodigo: 'TEMP-01', valor: 25, timestamp: new Date(base + 1_000).toISOString(), idExterno: 'repetido' },
+        { sensorCodigo: 'TEMP-01', valor: 26, timestamp: new Date(base + 2_000).toISOString(), idExterno: 'unico' },
+      ];
+
+      const res = await request(app.getHttpServer())
+        .post(url('/mediciones/bulk'))
+        .set(t.deviceHeaders)
+        .send({ items })
+        .expect(207);
+
+      expect(res.body).toMatchObject({ recibidas: 3, aceptadas: 2, duplicadas: 1, rechazadas: 0 });
+      expect(await prisma().medicion.count({ where: { sensorId: t.sensorIds['TEMP-01'] } })).toBe(2);
+      // El marcador de idempotencia se registra una sola vez por idExterno.
+      expect(await prisma().medicionIdempotencia.count({ where: { dispositivoId: t.dispositivoId } })).toBe(2);
+    } finally {
+      await t.limpiar();
+    }
+  });
+
+  // ── R-01 · alertas del lote apuntan a la medición que las disparó ────────
+
+  it('el lote genera la alerta y la asocia a la medición que la disparó', async () => {
+    const t = await crearTenant(app, 'lotealerta', ['TEMP-01']);
+    try {
+      await request(app.getHttpServer())
+        .post(url('/reglas'))
+        .set(auth(token))
+        .send({
+          nombre: 'Temperatura alta (lote)',
+          operador: 'MAYOR_QUE',
+          umbralMax: 30,
+          severidad: 'ALTA',
+          sensorId: t.sensorIds['TEMP-01'],
+        })
+        .expect(201);
+
+      const base = Date.now() - 60_000;
+      const items = [
+        { sensorCodigo: 'TEMP-01', valor: 24, timestamp: new Date(base).toISOString() },
+        { sensorCodigo: 'TEMP-01', valor: 31.5, timestamp: new Date(base + 1_000).toISOString() },
+        { sensorCodigo: 'TEMP-01', valor: 22, timestamp: new Date(base + 2_000).toISOString() },
+      ];
+
+      const res = await request(app.getHttpServer())
+        .post(url('/mediciones/bulk'))
+        .set(t.deviceHeaders)
+        .send({ items })
+        .expect(207);
+
+      expect(res.body).toMatchObject({ aceptadas: 3, rechazadas: 0, alertasGeneradas: 1 });
+
+      const alerta = await prisma().alerta.findFirstOrThrow({ where: { sensorId: t.sensorIds['TEMP-01'] } });
+      const disparadora = await prisma().medicion.findFirstOrThrow({
+        where: { sensorId: t.sensorIds['TEMP-01'], valor: 31.5 },
+      });
+      // La correlación de `createManyAndReturn` asocia la alerta a la lectura correcta.
+      expect(alerta.medicionId?.toString()).toBe(disparadora.id.toString());
+      expect(Number(alerta.valorDetectado)).toBe(31.5);
+    } finally {
+      await t.limpiar();
+    }
+  });
+
+  // ── TS-30 · lote sobredimensionado ───────────────────────────────────────
   it('TS-30: un lote de 501 mediciones se rechaza con 400 y nada se persiste', async () => {
     const t = await crearTenant(app, 'ts30', ['TEMP-01']);
     try {
