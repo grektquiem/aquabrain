@@ -1,0 +1,100 @@
+Verificación de la aplicación AquaBrain — 2026-10-17
+========================================================================
+
+Entorno
+-------
+  Sistema    : Windows
+  Node       : v24.16.0   npm 11.13.0
+  Revision   : a partir de a729625 (rama main)
+  Base de datos: PostgreSQL 16 en contenedor `aquabrain-pg` (localhost:55432)
+
+Compilación
+-----------
+  npm run build                     -> exit 0 (shared + api + web)
+  npm run build --workspace @aquabrain/simulator -> exit 0
+  Aviso de Vite: chunk JS > 500 kB (no es error).
+
+Servicios levantados
+--------------------
+  PostgreSQL    : ya en ejecución (contenedor aquabrain-pg)
+  API NestJS    : node dist/main.js  -> http://localhost:3000
+  Dashboard     : vite               -> http://localhost:5173  (proxy /api -> 3000)
+
+  GET /health   -> {"estado":"ok","baseDatos":"ok","latenciaMs":9}
+
+Autenticación
+-------------
+  POST /api/v1/auth/login  (admin@aqua.cl)
+  -> accessToken + refreshToken; usuario con 21 permisos efectivos.
+
+Barrido de endpoints de lectura (con token de Administrador)
+------------------------------------------------------------
+  auth/me                -> id,email,nombre,rol,permisos
+  usuarios               -> total 3
+  sistemas               -> 2  (INV-NORTE-01 "Invernadero Norte", INV-SUR-02 "Invernadero Sur")
+  cultivos               -> 3
+  dispositivos           -> 2  (DEV-01, DEV-02)
+  sensores               -> 10
+  mediciones/ultimas     -> 10
+  mediciones/serie       -> OK (agregación por bucket)
+  alertas                -> total 3 (antes de la prueba)
+  alertas/resumen        -> grupos por severidad/estado
+  reglas                 -> 4
+  dashboard/estado       -> dispositivos + sensores + alertas activas
+  auditoria              -> total 1052
+  roles                  -> 3
+  permisos               -> 21
+  tipos-variable         -> 5
+  OpenAPI                -> 51 operaciones servidas en /api/docs
+
+Flujo completo: medición -> API -> BD -> panel/alerta
+-----------------------------------------------------
+  1) Rotación de credencial de dispositivo (RF14):
+       POST /api/v1/dispositivos/{DEV-01}/rotar-clave  -> apiKey nueva (una sola vez)
+
+  2) Simulador en modo online (5 sensores x 3 lecturas):
+       mediciones aceptadas : 15
+       duplicadas           : 0
+       errores              : 0
+     Efecto: DEV-01 paso a estado EN_LINEA, frescura EN_LINEA, "hace 2 min".
+
+  3) Simulador en modo anomalia (perfil ola-de-calor):
+       mediciones aceptadas : 15
+       valores fuera de rango: 10
+       alertas generadas    : 2
+         - ALTA  : pH fuera de rango (valor 7.8)      [PH-01,  umbral [6,7]]
+         - MEDIA : Temperatura alta (valor 33.6)      [TEMP-01, umbral > 32]
+
+Verificación de la interfaz (navegador real, headless)
+------------------------------------------------------
+  Login -> Panel -> Históricos -> Alertas
+  - Panel      : "DISPOSITIVOS EN LÍNEA 1/2", "VARIABLES MONITOREADAS 10",
+                 "ALERTAS ACTIVAS 4 · 1 alta(s)"; DEV-01 muestra los valores
+                 recién inyectados (TEMP-01 38.8 °C, PH-01 7.8, ...).
+  - Históricos : gráfico "21 punto(s) · agrupación 1h" + Exportar CSV.
+  - Alertas    : "4 alerta(s)" con botón Resolver; incluye las dos generadas.
+  - Consola    : sin errores de aplicación; solo 2 x HTTP 401 en
+                 /api/v1/auth/refresh (sonda normal de sesión ausente).
+
+Cambios provocados por la verificación (transparencia)
+------------------------------------------------------
+  Tabla        Antes   Después   Delta
+  Medicion     52230   52260     +30   (15 online + 15 anomalía)
+  Alerta           3       5      +2
+  Auditoria     1052    1083     +31   (acciones de la verificación)
+
+Corrección aplicada al código
+-----------------------------
+  apps/web/src/App.tsx (pie del dashboard):
+    antes : "AquaPlants / AquaBrain · Unidad 3 (ES3) · panel conectado a <code>API_URL</code>"
+    ahora : "AquaPlants / AquaBrain · Unidad 4 (ES4) · panel conectado a <code>{API_URL}</code>"
+  El valor real se toma de `import.meta.env.VITE_API_URL` (por defecto "/api/v1").
+  Recompilado: npm run build --workspace @aquabrain/web -> exit 0 (typecheck OK).
+
+Cómo levantar / detener
+-----------------------
+  Levantar : npm run build && npm run start:prod  (API, requiere apps/api/.env)
+             npm run dev      (dashboard, http://localhost:5173)
+             npm run dev:sim  (simulador; requiere DEVICE_KEY y DEVICE_CODE)
+  Detener  : cerrar los procesos node de la API y del dashboard; el contenedor
+             PostgreSQL (aquabrain-pg) es independiente.

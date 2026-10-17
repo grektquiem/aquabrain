@@ -4,6 +4,7 @@ import { PaginaLogin } from './paginas/Login';
 import { PaginaPanel } from './paginas/Panel';
 import { PaginaHistoricos } from './paginas/Historicos';
 import { PaginaAlertas } from './paginas/Alertas';
+import { API_URL } from './api/cliente';
 
 /** Rutas y armazón del dashboard. La sesión vive en memoria y se recupera del refresco. */
 function Marco() {
@@ -58,7 +59,7 @@ function Marco() {
       </main>
 
       <footer className="pie">
-        AquaPlants / AquaBrain · Unidad 3 (ES3) · panel conectado a <code>API_URL</code>
+        AquaPlants / AquaBrain · Unidad 4 (ES4) · panel conectado a <code>{API_URL}</code>
       </footer>
     </div>
   );
