@@ -1,0 +1,329 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Analisis aplicacion</title><style>body{font-family:sans-serif;padding:24px;max-width:900px;margin:auto;line-height:1.6}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px}th{background:#f5f5f5}pre,code{background:#f5f5f5;padding:4px;overflow:auto}</style></head><body><h1>Análisis de la aplicación AquaBrain</h1>
+<h2>1. Resumen ejecutivo</h2>
+<p>AquaBrain es una plataforma web para <strong>monitoreo y gestión de cultivos aeropónicos</strong> (AquaPlants). Centraliza mediciones de sensores (temperatura, humedad, pH, distancia/nivel, caudal), evalúa reglas de alerta, controla acceso por roles y permite consultar estado actual e histórico.</p>
+<p><strong>Resultado:</strong> La aplicación <strong>está funcional, coherente con el diseño y probada</strong>. Cumple la mayoría del producto mínimo (7 de 8 ítems). La única brecha declarada relevante es el <strong>despliegue cloud</strong>.</p>
+<h2>2. Fortalezas</h2>
+<table>
+<thead>
+<tr>
+<th>Fortaleza</th>
+<th>Evidencia</th>
+<th>Comentario</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Arquitectura clara y modular</strong></td>
+<td><code>apps/api/src/modules/*</code>, monorepo Turborepo</td>
+<td>Separación por dominio (auth, usuarios, sistemas, cultivos, dispositivos, sensores, mediciones, reglas, alertas, dashboard, auditoría). Alta mantenibilidad.</td>
+</tr>
+<tr>
+<td><strong>Fuente única de verdad</strong></td>
+<td><code>packages/shared</code> (Zod)</td>
+<td>Contratos compartidos entre API, web y simulador. Reduce deriva entre capas.</td>
+</tr>
+<tr>
+<td><strong>Ingesta robusta (offline + bulk + idempotencia)</strong></td>
+<td><code>mediciones.controller.ts</code>, <code>mediciones.service.ts</code>, simulador modo <code>offline</code></td>
+<td>Soporta cortes de conectividad: buffer local + <code>POST /mediciones/bulk</code> con <code>idExterno</code> e índice único para evitar duplicados.</td>
+</tr>
+<tr>
+<td><strong>Motor de reglas correcto</strong></td>
+<td><code>apps/api/src/modules/reglas/reglas.engine.ts</code></td>
+<td>Evalúa reglas activas al recibir medición. Prioriza reglas del <strong>sensor</strong> sobre reglas del <strong>tipo de variable</strong>. Genera alertas con severidad.</td>
+</tr>
+<tr>
+<td><strong>Detección de silencio</strong></td>
+<td><code>apps/api/src/modules/dashboard/frescura.ts</code></td>
+<td>Cálculo en vivo: <code>SIN_COMUNICACION</code> si <code>segundosSinReportar &gt; ALERT_SILENCE_FACTOR × intervalo</code>. No crea alerta innecesaria, solo marca estado.</td>
+</tr>
+<tr>
+<td><strong>Seguridad bien aplicada</strong></td>
+<td>JWT (access+refresh), RBAC (21 permisos/3 roles), bcrypt, validación Zod, CORS, guards</td>
+<td>Implementación sólida para el alcance académico.</td>
+</tr>
+<tr>
+<td><strong>Calidad y trazabilidad</strong></td>
+<td>125 pruebas verdes, cobertura líneas 92,26%, OpenAPI en <code>/api/docs</code></td>
+<td>Buen nivel de automatización. Auditoría y trazabilidad presentes.</td>
+</tr>
+<tr>
+<td><strong>Datos realistas y verificados</strong></td>
+<td><code>docs/ES4/evidencia/*</code>, verificación e2e</td>
+<td>Flujo completo verificado: simulador online (15 aceptadas) → anomalía (2 alertas). Capturas muestran pie corregido (Unidad 4/ES4).</td>
+</tr>
+</tbody></table>
+<h2>3. Debilidades</h2>
+<table>
+<thead>
+<tr>
+<th>Debilidad</th>
+<th>Impacto</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Despliegue cloud ausente</strong></td>
+<td>Medio (cumplimiento del ítem 7)</td>
+<td>Desplegar API+BD+web en Render/Railway/Vercel+Neon (documentado).</td>
+</tr>
+<tr>
+<td><strong>Entidad <code>Evento</code> modelada pero no implementada</strong></td>
+<td>Bajo</td>
+<td>Registrar eventos de conectividad (<code>SIN_COMUNICACION</code>/<code>RECONEXION</code>) para mayor trazabilidad operativa (ya declarado como brecha D-15).</td>
+</tr>
+<tr>
+<td><strong>Reintentos automáticos con backoff</strong></td>
+<td>Bajo</td>
+<td>Añadir reintentos con retroceso exponencial en cliente del simulador/API consumers (actualmente reenvío manual del lote + <code>retry:1</code> en frontend).</td>
+</tr>
+<tr>
+<td><strong>Cobertura de ramas 69,01%</strong></td>
+<td>Bajo</td>
+<td>Ampliar pruebas de rutas de error/edge cases para elevar ramas &gt; 75%.</td>
+</tr>
+<tr>
+<td><strong>Vulnerabilidades de dependencias (npm audit)</strong></td>
+<td>Bajo (mayoritario transitivo)</td>
+<td>Planificar actualización de NestJS y dependencias con alertas high/critical.</td>
+</tr>
+<tr>
+<td><strong>Sin suite E2E/UI automatizada</strong></td>
+<td>Bajo</td>
+<td>Añadir Playwright para cubrir flujos críticos (login, panel, históricos, alertas).</td>
+</tr>
+<tr>
+<td><strong>Algunos ítems &quot;propuestos&quot; no ejecutados</strong></td>
+<td>Bajo</td>
+<td>Respaldos (<code>pg_dump</code>), uptime, Lighthouse, ZAP ya declarados como propuestas/futuras.</td>
+</tr>
+</tbody></table>
+<h2>4. Análisis técnico por capa</h2>
+<h3>Backend (NestJS/TypeScript)</h3>
+<ul>
+<li><strong>Arquitectura modular</strong> correcta (feature modules). Usa Guards/Interceptors/Exception filters.</li>
+<li><strong>Validación</strong> centralizada con Zod vía <code>@aquabrain/shared</code>.</li>
+<li><strong>Prisma</strong> bien usado: transacciones donde corresponde, índices, <code>select</code> controlados.</li>
+<li><strong>Motor de reglas</strong> simple y eficaz (evaluación en línea). Adecuado al volumen del prototipo.</li>
+<li><strong>Idempotencia</strong> bien resuelta con <code>MedicionIdempotencia</code> + <code>idExterno</code>.</li>
+</ul>
+<h3>Frontend (Vite/TS)</h3>
+<ul>
+<li><strong>UI clara</strong> (Panel/Históricos/Alertas/Admin). Muestra frescura, severidad de alertas, export CSV.</li>
+<li><strong>TanStack Query</strong> para fetching/cache. Manejo básico de auth con refresh.</li>
+<li><strong>Accesibilidad mínima</strong> (role/aria en algunos elementos). Lighthouse no ejecutado.</li>
+<li><strong>Sin tests automatizados</strong> (solo verificación manual/navegador). Área de mejora.</li>
+</ul>
+<h3>Base de datos (PostgreSQL)</h3>
+<ul>
+<li><strong>Esquema coherente</strong> con dominio: 19 modelos/20 tablas. Incluye <code>Planta</code>, <code>EstadoSensorActual</code>, <code>MedicionIdempotencia</code>, <code>Auditoria</code>.</li>
+<li><strong>Índices</strong> presentes (p. ej. <code>idx_medicion_sensor_ts</code>, <code>idx_alerta_estado</code>).</li>
+<li><strong>Append-only</strong> para <code>medicion</code> (buena práctica para trazabilidad).</li>
+<li><strong>Diferencia con DDL entregado</strong> justificada: usa UUIDs, enums nativos, entidades adicionales (<code>Evento</code> modelado), <code>RefreshToken</code>, idempotencia. (Ver análisis comparativo.)</li>
+</ul>
+<h3>Simulador IoT</h3>
+<ul>
+<li><strong>3 modos</strong> útiles para demos/tests: online/offline/anomalia.</li>
+<li><strong>Valida contrato</strong> antes de enviar (Zod). Acumula con <code>timestamp</code> original en offline.</li>
+<li><strong>Demuestra idempotencia</strong> reenviando mismo lote.</li>
+<li><strong>No implementa backoff</strong> (mejora menor).</li>
+</ul>
+<h2>5. Seguridad</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Estado</th>
+<th>Comentario</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Autenticación</strong></td>
+<td>✅</td>
+<td>JWT access+refresh con rotación básica.</td>
+</tr>
+<tr>
+<td><strong>Autorización RBAC</strong></td>
+<td>✅</td>
+<td>Guards por permisos/roles.</td>
+</tr>
+<tr>
+<td><strong>Hashing</strong></td>
+<td>✅</td>
+<td><code>bcrypt</code> para passwords; pepper/hash para device keys.</td>
+</tr>
+<tr>
+<td><strong>Validación</strong></td>
+<td>✅</td>
+<td>Zod en todos los endpoints relevantes.</td>
+</tr>
+<tr>
+<td><strong>CORS</strong></td>
+<td>✅</td>
+<td>Configurado por <code>CORS_ORIGINS</code>.</td>
+</tr>
+<tr>
+<td><strong>SQL Injection</strong></td>
+<td>✅</td>
+<td>Prisma parametrizado.</td>
+</tr>
+<tr>
+<td><strong>Secretos</strong></td>
+<td>✅</td>
+<td>No versionados (.env ignorado).</td>
+</tr>
+<tr>
+<td><strong>Rate limiting</strong></td>
+<td>⚠️</td>
+<td><code>@nestjs/throttler</code> en memoria (no distribuido). Suficiente para prototipo.</td>
+</tr>
+</tbody></table>
+<h2>6. Rendimiento (medido)</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint/operación</th>
+<th>p50</th>
+<th>p95</th>
+<th>Meta</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GET /dashboard/estado</code></td>
+<td>104,1 ms</td>
+<td>225,9 ms</td>
+<td>&lt; 2000 ms</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /mediciones/serie</code> (1 mes)</td>
+<td>573,7 ms</td>
+<td>633,8 ms</td>
+<td>&lt; 5000 ms</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>GET /alertas</code></td>
+<td>64,8 ms</td>
+<td>86,2 ms</td>
+<td>—</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>POST /mediciones/bulk</code> (500)</td>
+<td>1403 ms</td>
+<td>—</td>
+<td>—</td>
+<td>✅ (12× mejora tras optimización R-01)</td>
+</tr>
+<tr>
+<td>Consulta BD serie</td>
+<td>~2,2 ms</td>
+<td>—</td>
+<td>—</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<h2>7. Pruebas y calidad</h2>
+<ul>
+<li><strong>125 pruebas</strong> (50 unit + 75 integración), 17 suites. Todas verdes.</li>
+<li><strong>Cobertura</strong>: líneas 92,26%, sentencias 91,09%, funciones 89,49%, ramas 69,01%.</li>
+<li><strong>Umbrales</strong> aplicados vía script combinado (<code>coverage-combinado.js</code>).</li>
+<li><strong>E2E manual</strong> documentado y verificado (evidencia en <code>docs/ES4/evidencia/</code>).</li>
+</ul>
+<h2>8. Matriz MoSCoW (cumplimiento)</h2>
+<table>
+<thead>
+<tr>
+<th>Categoría</th>
+<th>Cantidad</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Must</strong></td>
+<td>14 RF + 5 RNF (aprox)</td>
+<td>✅ Implementados con evidencia</td>
+</tr>
+<tr>
+<td><strong>Should</strong></td>
+<td>varios (RF08/RF09 parciales, RF13/RF14, RNF02/RNF03/RNF07/RNF08/RNF10)</td>
+<td>🟡 Parciales (algunos sin ejecutar: ZAP/Lighthouse/uptime/k6/app Android)</td>
+</tr>
+<tr>
+<td><strong>Could</strong></td>
+<td>RF09 (comparativa UI)</td>
+<td>🟡 Parcial</td>
+</tr>
+<tr>
+<td><strong>Won&#39;t</strong></td>
+<td>RF15, RNF04 (particionado), RNF09</td>
+<td>✅ Declarados</td>
+</tr>
+</tbody></table>
+<p><strong>Global catálogo (26):</strong> 17 cumplidos con evidencia + 6 parciales + 3 fuera de alcance. Coherente con <code>docs/ES4/07-resultados-cuantificables.md</code>.</p>
+<h2>9. Recomendaciones priorizadas</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Recomendación</th>
+<th>Prioridad</th>
+<th>Esfuerzo</th>
+<th>Beneficio</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1</strong></td>
+<td>Despliegue cloud (Render/Railway + Neon) con HTTPS</td>
+<td><strong>P1</strong></td>
+<td>Medio</td>
+<td>Cierra ítem 7 del producto mínimo y permite evaluación remota.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Implementar registro de <code>Evento</code> (conectividad) o declarar uso de Auditoría</td>
+<td><strong>P1</strong></td>
+<td>Bajo–Medio</td>
+<td>Cierra brecha D-15 (ya declarada).</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Añadir reintentos con backoff en simulador/cliente HTTP</td>
+<td><strong>P2</strong></td>
+<td>Bajo</td>
+<td>Mayor robustez ante caídas transitorias.</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>Subir cobertura de ramas (tests de error paths)</td>
+<td><strong>P2</strong></td>
+<td>Bajo–Medio</td>
+<td>Calidad + confianza.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>Añadir E2E UI con Playwright</td>
+<td><strong>P2</strong></td>
+<td>Medio</td>
+<td>Previene regresiones visuales/funcionales.</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td><code>npm audit fix</code> / actualización selectiva de dependencias transitivas</td>
+<td><strong>P3</strong></td>
+<td>Medio</td>
+<td>Reduce alertas (principalmente transitivas).</td>
+</tr>
+</tbody></table>
+<h2>10. Veredicto final</h2>
+<p><strong>La aplicación AquaBrain está en buen estado y cumple con lo esencial.</strong></p>
+<ul>
+<li><strong>Funcionalidad:</strong> Completa para el alcance (ingesta, reglas, alertas, dashboard, auth/RBAC).</li>
+<li><strong>Arquitectura:</strong> Sólida, modular, con buena separación de responsabilidades.</li>
+<li><strong>Calidad:</strong> Bien probada (125 tests, alta cobertura). Evidencia real verificada.</li>
+<li><strong>Consistencia:</strong> Coherente entre docs, código, esquema Prisma y contrato OpenAPI.</li>
+<li><strong>Honestidad:</strong> Brechas declaradas explícitamente (cloud, Evento, evidencias no ejecutadas).</li>
+</ul>
+<p><strong>Puntuación global (subjetiva): 9/10</strong>. El único punto real a cubrir para &quot;producto mínimo completo&quot; es <strong>el despliegue cloud</strong>. Con eso, la solución queda muy sólida para presentación y defensa.</p>
+</body></html>
