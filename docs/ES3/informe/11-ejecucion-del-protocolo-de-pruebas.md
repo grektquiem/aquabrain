@@ -110,7 +110,7 @@ flowchart LR
 | TS-37 | RF07, HU01 | Última medición + fecha/hora + frescura + alertas | Correcto | ✅ | `alertas.e2e` + navegador real |
 | TS-38 | RF08, HU02 | Serie agregada + CSV; rango > 90 días → `422` | Serie y CSV correctos; tope aplicado | ✅ | `historicos.e2e-spec.ts` |
 | TS-39 | RF09, HU04 | Series superpuestas con leyenda y filtro | API entrega varias series; **la UI no superpone** | 🟡 Parcial | `historicos.e2e` (RF09 *Could*) |
-| TS-40 | RF14, RN-05 | Dispositivo pasa a `SIN_COMUNICACION` + evento/alerta | Correcto | ✅ | `alertas.e2e-spec.ts` |
+| TS-40 | RF14, RN-05 | Dispositivo pasa a `SIN_COMUNICACION` (marca de frescura calculada en vivo) | Correcto (la creación de evento/alerta no se verifica; brecha D-15) | ✅ | `alertas.e2e-spec.ts` |
 | TS-41 | RF06, RF14, RN-10 | Conserva `timestamp` y `origen = OFFLINE` | Correcto (4 instantes para 8 filas) | ✅ | `mediciones.e2e` + simulador offline |
 | TS-42 | RF13, HU11, RNF08 | OpenAPI con endpoints, esquemas y errores | **35 rutas**; coincide con `@aquabrain/shared` | ✅ | `contrato.e2e` + `salud.e2e` |
 | TS-43 | RNF03 | Dashboard < 2 s; serie 1 mes < 5 s (50 000) | p50 **104,1 ms** / **573,7 ms** | ✅ | `perf-ts43.txt` |

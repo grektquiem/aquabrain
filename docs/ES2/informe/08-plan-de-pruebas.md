@@ -166,7 +166,7 @@ P1/P2/P3 · **Automatización:** A = automatizada, M = manual.
 | TS-37 | Dashboard de estado actual | I | P1 | A | RF07, HU01 | Última medición por sensor, **fecha/hora**, frescura y conteo de alertas |
 | TS-38 | Histórico con agregación horaria y **exportación CSV** | I | P1 | A | RF08, HU02 CA③ | Serie agregada correcta; CSV con datos filtrados; rango > 90 días → `422` |
 | TS-39 | Comparación multi-sistema de una variable común | I/E | P2 | A | RF09, HU04 | Series superpuestas con leyenda y filtro por rango |
-| TS-40 | Job de detección de dispositivo sin comunicación | I | P2 | A | RF14, RN-05 | El dispositivo pasa a `SIN_COMUNICACION` y se crea evento/alerta |
+| TS-40 | Detección de dispositivo sin comunicación (marca de frescura) | I | P2 | A | RF14, RN-05 | El dispositivo pasa a `SIN_COMUNICACION` al superar `ALERT_SILENCE_FACTOR × intervalo` (la creación de evento/alerta es una brecha declarada: ES3 D-15) |
 | TS-41 | Sincronización offline con timestamps originales | I | P1 | A | RF06, RF14, RN-10 | Se conserva el `timestamp` de origen y `origen = OFFLINE` |
 | TS-42 | Documentación OpenAPI versionada validada contra la app Android | I/M | P2 | A | RF13, HU11, RNF08 | Contrato en `/api/docs` con endpoints, esquemas, errores y ejemplos |
 

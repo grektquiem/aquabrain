@@ -3694,8 +3694,8 @@ producción de extremo a extremo.</p>
 <tr>
 <td>TS-40</td>
 <td>RF14, RN-05</td>
-<td>Dispositivo pasa a <code>SIN_COMUNICACION</code> + evento/alerta</td>
-<td>Correcto</td>
+<td>Dispositivo pasa a <code>SIN_COMUNICACION</code> (marca de frescura calculada en vivo)</td>
+<td>Correcto (la creación de evento/alerta no se verifica; brecha D-15)</td>
 <td>✅</td>
 <td><code>alertas.e2e-spec.ts</code></td>
 </tr>
@@ -4125,6 +4125,14 @@ de las pruebas, tal como exige la rúbrica (indicador 14).</p>
 <td><strong>No se usa</strong> (<code>throttler</code> en memoria)</td>
 <td>No era necesario para una sola instancia</td>
 <td>El límite no se comparte entre réplicas</td>
+<td>Baja</td>
+</tr>
+<tr>
+<td><strong>D-15</strong></td>
+<td>Registro y consulta de <strong>eventos</strong> de conectividad (<code>SIN_COMUNICACION</code>, <code>RECONEXION</code>…)</td>
+<td>Tabla <code>evento</code> <strong>creada en la migración</strong>, pero <strong>sin escrituras ni endpoint</strong> (<code>prisma.evento</code> no se usa)</td>
+<td>Se priorizó el camino <em>Must</em>; la detección de silencio quedó como <strong>marca en vivo</strong> en el panel</td>
+<td>Bajo: el dominio lo cubren alertas, auditoría y la marca de frescura</td>
 <td>Baja</td>
 </tr>
 </tbody></table>

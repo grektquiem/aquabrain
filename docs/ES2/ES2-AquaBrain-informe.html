@@ -57,7 +57,7 @@
     <div><strong>Contraparte:</strong> AquaPlants / AquaBrain (Robotic Systems)</div>
     <div><strong>Stack:</strong> React 18 + Vite 5 · Node.js 20 + NestJS 10 + Prisma 5 · PostgreSQL 16 + MongoDB + Redis</div>
     <div><strong>Metodología:</strong> Scrum (sprints de dos semanas)</div>
-    <div><strong>Fecha del documento:</strong> 16 de octubre de 2026</div>
+    <div><strong>Fecha del documento:</strong> 17 de octubre de 2026</div>
   </div>
 </div>
 
@@ -6585,12 +6585,12 @@ P1/P2/P3 · <strong>Automatización:</strong> A = automatizada, M = manual.</p>
 </tr>
 <tr>
 <td>TS-40</td>
-<td>Job de detección de dispositivo sin comunicación</td>
+<td>Detección de dispositivo sin comunicación (marca de frescura)</td>
 <td>I</td>
 <td>P2</td>
 <td>A</td>
 <td>RF14, RN-05</td>
-<td>El dispositivo pasa a <code>SIN_COMUNICACION</code> y se crea evento/alerta</td>
+<td>El dispositivo pasa a <code>SIN_COMUNICACION</code> al superar <code>ALERT_SILENCE_FACTOR × intervalo</code> (la creación de evento/alerta es una brecha declarada: ES3 D-15)</td>
 </tr>
 <tr>
 <td>TS-41</td>
@@ -7963,7 +7963,7 @@ modo que <strong>no se bloquea el avance</strong>.</p>
 <td>Contraparte / docente</td>
 <td>«Un dato viejo no debe confundirse con una alerta de umbral»</td>
 <td>Adoptada</td>
-<td>Se separan dos conceptos: <strong>alerta por umbral</strong> (RF11) y <strong>marca de dato desactualizado</strong>; la segunda no crea alerta, solo cambia el estilo de la tarjeta y genera evento</td>
+<td>Se separan dos conceptos: <strong>alerta por umbral</strong> (RF11) y <strong>marca de dato desactualizado</strong>; la segunda no crea alerta, solo cambia el estilo de la tarjeta (la generación de evento quedó como brecha declarada: ES3 D-15)</td>
 <td>✅ Aplicado</td>
 </tr>
 <tr>

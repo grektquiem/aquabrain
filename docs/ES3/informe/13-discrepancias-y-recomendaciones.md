@@ -22,6 +22,7 @@ Esta sección confronta el **diseño de ES2** y el **borrador** con lo que efect
 | **D-05** | Tabla `medicion` **particionada** por fecha | Tabla **normal** con índices | RNF04 quedó *Won't* en el MoSCoW | Ninguno con el volumen actual; a gran escala, sí | Baja |
 | **D-06** | Motor de reglas **asíncrono** (cola) | Evaluación **en línea** | Simplicidad para el volumen del prototipo | La ingesta carga la evaluación | Media |
 | **D-07** | Redis para caché y tasa distribuida | **No se usa** (`throttler` en memoria) | No era necesario para una sola instancia | El límite no se comparte entre réplicas | Baja |
+| **D-15** | Registro y consulta de **eventos** de conectividad (`SIN_COMUNICACION`, `RECONEXION`…) | Tabla `evento` **creada en la migración**, pero **sin escrituras ni endpoint** (`prisma.evento` no se usa) | Se priorizó el camino *Must*; la detección de silencio quedó como **marca en vivo** en el panel | Bajo: el dominio lo cubren alertas, auditoría y la marca de frescura | Baja |
 
 ## 13.3 Discrepancias de proceso y evidencia
 

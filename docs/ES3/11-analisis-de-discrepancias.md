@@ -49,6 +49,17 @@ Son defectos o comportamientos **descubiertos al probar**, no supuestos:
 
 Las pruebas **modifican el estado**: la prueba de resolución en la interfaz dejó una alerta resuelta, por lo que la bandeja pasó de **3 a 2 alertas activas**. La tabla `medicion` incluye **7 000 filas sintéticas** añadidas para la prueba de volumen TS-43 y **2 000 filas** de los lotes de rendimiento de escritura (declarado en §6.3). Ambas cosas se documentan para que cualquier cifra del informe sea reproducible.
 
-## 11.6 Balance
+## 11.6 Brecha funcional declarada: entidad `Evento`
+
+| # | Esperado (ES2) | Implementado | Causa | Impacto |
+|---|---|---|---|---|
+| D-15 | Registro y consulta de **eventos** de conectividad (`SIN_COMUNICACION`, `RECONEXION`, `REINTENTO_SINCRONIZACION`, `ERROR_SENSOR`, `CAMBIO_CONFIGURACION`, `DESPLIEGUE`) | Tabla `evento` **creada en la migración** (`20261016225855_init`) y en el esquema Prisma, pero **sin escrituras ni endpoint**: ningún servicio usa `prisma.evento` | Se priorizó el camino *Must* (mediciones, reglas, alertas); la detección de silencio (RN-05) quedó como **marca calculada en vivo** («frescura») en el panel | Bajo: el dominio sigue cubierto por **alertas**, **auditoría** y la marca de frescura; el plan de mantención lo contempla como mejora (ES4 §9) |
+
+> **Corrección de precisión asociada.** El enunciado de **TS-40** decía «`SIN_COMUNICACION` + evento/alerta»;
+> la prueba (`alertas.e2e-spec.ts`) **solo** verifica la marca de frescura `SIN_COMUNICACION`, no la creación de
+> eventos ni alertas. El enunciado se corrigió (ES2 §7 y ES3 informe §11) para no atribuir a la prueba una
+> verificación que no realiza.
+
+## 11.7 Balance
 
 Las discrepancias se concentran en **tecnología** (justificadas) y en **evidencias de proceso no ejecutadas** (nube, k6, ZAP, Lighthouse, app Android). **No hay requisitos *Must* funcionales sin implementar**: todas las brechas funcionales son *Should/Could* o *Won't*. El único hallazgo de rendimiento relevante (H-04, camino de escritura por lote) quedó **resuelto con la optimización R-01**; el camino de lectura siempre estuvo holgadamente dentro de las metas.
