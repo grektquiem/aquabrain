@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Compilados
+dist/
+build/
+*.tsbuildinfo
+
+# Entorno (nunca se versiona)
+.env
+.env.*
+!.env.example
+infra/.env
+
+# Prisma
+apps/api/prisma/*.db
+
+# Cobertura y reportes
+coverage/
+coverage-final.json
+lcov.info
+junit*.xml
+reports/
+
+# Evidencia pesada
+apps/**/test-results/
+playwright-report/
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+logs/

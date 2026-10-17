@@ -1,0 +1,28 @@
+{
+  "name": "aquabrain-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma web de monitoreo y gestion de cultivos aeropónicos AquaPlants / AquaBrain (ES3 — Implementación de la solución).",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build --workspace @aquabrain/shared",
+    "build": "npm run build:shared && npm run build --workspace @aquabrain/api && npm run build --workspace @aquabrain/web",
+    "dev:api": "npm run start:dev --workspace @aquabrain/api",
+    "dev:web": "npm run dev --workspace @aquabrain/web",
+    "dev:sim": "npm run start --workspace @aquabrain/simulator",
+    "test": "npm run test --workspace @aquabrain/api",
+    "test:cov": "npm run test:cov --workspace @aquabrain/api",
+    "test:e2e": "npm run test:e2e --workspace @aquabrain/api",
+    "prisma:generate": "npm run prisma:generate --workspace @aquabrain/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace @aquabrain/api",
+    "seed": "npm run seed --workspace @aquabrain/api",
+    "lint": "npm run lint --workspace @aquabrain/api",
+    "typecheck": "npm run typecheck --workspace @aquabrain/api && npm run typecheck --workspace @aquabrain/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
