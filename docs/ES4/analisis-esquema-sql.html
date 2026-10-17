@@ -1,0 +1,129 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Analisis esquema</title><style>body{font-family:sans-serif;padding:24px;max-width:900px;margin:auto;line-height:1.6}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px}th{background:#f5f5f5}pre,code{background:#f5f5f5;padding:4px;overflow:auto}</style></head><body><h1>Análisis del esquema SQL</h1>
+<p>Se analiza el DDL entregado (PostgreSQL 15+). El esquema es funcional para un MVP, pero presenta <strong>desviaciones importantes</strong> respecto al esquema implementado en Prisma (<code>apps/api/prisma/schema.prisma</code>) y respecto a las buenas prácticas de diseño aplicadas en el proyecto.</p>
+<h2>1. Comparación con el esquema implementado (Prisma)</h2>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Esquema entregado</th>
+<th>Esquema implementado (AquaBrain/Prisma)</th>
+<th>Observación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Claves primarias</strong></td>
+<td><code>SERIAL</code>/<code>BIGSERIAL</code></td>
+<td><code>UUID</code> con <code>gen_random_uuid()</code></td>
+<td>El proyecto usa UUIDs (más seguros, fáciles de distribuir). El DDL usa IDs numéricos.</td>
+</tr>
+<tr>
+<td><strong>Enumeraciones</strong></td>
+<td><code>CHECK</code> (<code>estado_conexion</code>, <code>condicion</code>, <code>severidad</code>, <code>estado</code>)</td>
+<td><code>enum</code> nativos de PostgreSQL (<code>EstadoConexion</code>, <code>TipoEvento</code>, <code>Severidad</code>, <code>EstadoAlerta</code>, etc.)</td>
+<td>Prisma mapea enums a tipos nativos; el DDL usa CHECK (menos expresivo).</td>
+</tr>
+<tr>
+<td><strong>Modelo de dominio</strong></td>
+<td>Más simple (roles/permisos, licencia, sistema, cultivo, dispositivo, sensor, medición, regla, alerta, auditoría)</td>
+<td>Más completo: incluye <code>Planta</code>, <code>TipoVariable</code>, <code>CultivoSensor</code>, <code>EstadoSensorActual</code>, <code>MedicionIdempotencia</code>, <strong><code>Evento</code></strong></td>
+<td>El esquema entregado omite entidades relevantes (planta, relación cultivo-sensor, estado actual, idempotencia de lote, eventos).</td>
+</tr>
+<tr>
+<td><strong>Ingesta y sincronización offline</strong></td>
+<td>No contempla idempotencia de lotes</td>
+<td><code>MedicionIdempotencia</code> (<code>idExterno</code>, índice único parcial)</td>
+<td>Crucial para modo <code>offline</code> + <code>bulk</code> y evitar duplicados. Ausente en el DDL entregado.</td>
+</tr>
+<tr>
+<td><strong>Estado de conexión/frescura</strong></td>
+<td><code>dispositivo.estado_conexion</code> (<code>conectado/sin_conexion/error</code>) + <code>ultima_conexion</code></td>
+<td><code>dispositivo.estadoConexion</code> (enum: <code>EN_LINEA</code>, <code>SIN_COMUNICACION</code>, <code>INACTIVO</code>, <code>DESCONOCIDO</code>) + cálculo de <strong>frescura en vivo</strong> (3× intervalo)</td>
+<td>El enfoque implementado separa el estado persistido del cálculo de «sin comunicación» (más robusto ante silencio temporal).</td>
+</tr>
+<tr>
+<td><strong>Trazabilidad de eventos</strong></td>
+<td>Solo <code>log_auditoria</code></td>
+<td><code>Auditoria</code> + <strong><code>Evento</code></strong> (con <code>TipoEvento</code>, severidad, datos JSONB)</td>
+<td>El modelo implementado distingue auditoría operativa de eventos de conectividad/operación del gateway.</td>
+</tr>
+<tr>
+<td><strong>Tokens/refresh</strong></td>
+<td>Ausente</td>
+<td><code>RefreshToken</code> (rotación, revocación)</td>
+<td>Seguridad JWT reforzada (refresh con rotación). No presente en el DDL.</td>
+</tr>
+<tr>
+<td><strong>Cultivo-sensor</strong></td>
+<td>Ausente</td>
+<td><code>CultivoSensor</code> (muchos-a-muchos con metadata)</td>
+<td>Permite relacionar sensores con cultivos activos y llevar contexto operacional.</td>
+</tr>
+<tr>
+<td><strong>Índices</strong></td>
+<td>Básicos (<code>idx_medicion_sensor_ts</code>, <code>idx_alerta_estado</code>, <code>idx_log_usuario_ts</code>)</td>
+<td>Índices compuestos específicos (<code>idx_medicion_sensor_ts</code>, <code>idx_alerta_estado</code>, <code>idx_estado_sensor_actual</code>, etc.)</td>
+<td>El esquema Prisma tiene índices más orientados a patrones de consulta del dashboard.</td>
+</tr>
+<tr>
+<td><strong>Relaciones y borrado</strong></td>
+<td><code>ON DELETE CASCADE/SET NULL</code> coherentes</td>
+<td>Restricciones similares; algunas <code>Restrict</code> para evitar pérdida accidental</td>
+<td>Ambos razonables; Prisma prioriza integridad referencial.</td>
+</tr>
+</tbody></table>
+<h2>2. Fortalezas del DDL entregado</h2>
+<ul>
+<li><strong>Claro y didáctico</strong>: bloques bien organizados, nombres legibles, comentarios útiles.</li>
+<li><strong>Cobertura mínima</strong>: cubre seguridad (roles/permisos), dominio, alertas y auditoría.</li>
+<li><strong>Restricciones CHECK</strong>: validan dominios aunque no use enums.</li>
+<li><strong>Índices básicos</strong>: cubren consultas más frecuentes.</li>
+</ul>
+<h2>3. Debilidades / Brechas</h2>
+<table>
+<thead>
+<tr>
+<th>Brecha</th>
+<th>Impacto</th>
+<th>Recomendación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Falta idempotencia (<code>idExterno</code>)</strong></td>
+<td>Riesgo de duplicados en sincronización offline/lotes</td>
+<td>Añadir tabla de idempotencia o campo <code>id_externo</code> único en mediciones/bulk (como en Prisma).</td>
+</tr>
+<tr>
+<td><strong>Sin soporte para bulk + offline</strong></td>
+<td>No refleja el flujo real del simulador (modo <code>offline</code> → sincroniza lote)</td>
+<td>Incorporar <code>origen</code> (ONLINE/OFFLINE/MANUAL) y estrategia de idempotencia.</td>
+</tr>
+<tr>
+<td><strong>Estados de conexión simplificados</strong></td>
+<td>Difícil expresar «SIN_COMUNICACION» vs «EN_LINEA» con precisión</td>
+<td>Usar enum + cálculo de frescura; o añadir campos <code>ultima_lectura</code>, <code>intervalo_reporte_seg</code>.</td>
+</tr>
+<tr>
+<td><strong>Falta <code>Evento</code></strong></td>
+<td>Pierde trazabilidad de eventos de conectividad (silencio/reconexión)</td>
+<td>Añadir tabla <code>evento</code> (tipo, severidad, datos JSONB, <code>ocurrido_en</code>).</td>
+</tr>
+<tr>
+<td><strong>Sin RefreshToken</strong></td>
+<td>Menor robustez en rotación de tokens JWT</td>
+<td>Añadir tabla <code>refresh_token</code> con <code>revocado</code>, <code>expira_en</code>, <code>token_hash</code>.</td>
+</tr>
+<tr>
+<td><strong>Auditoría menos rica</strong></td>
+<td><code>log_auditoria.detalle</code> JSONB existe, pero sin separación Evento/Auditoria</td>
+<td>Mantener separación conceptual (operacional vs. seguridad/auditoría).</td>
+</tr>
+<tr>
+<td><strong>UUID vs SERIAL</strong></td>
+<td>IDs secuenciales más predecibles</td>
+<td>Considerar UUIDs si se prevé distribución/múltiples instancias.</td>
+</tr>
+</tbody></table>
+<h2>4. Conclusión</h2>
+<p>El DDL entregado es <strong>adecuado como base MVP</strong> y fácil de entender. Sin embargo, <strong>no alcanza a cubrir los requisitos operativos reales</strong> del flujo dispositivo→API (modo <code>offline</code>, idempotencia, frescura, eventos). El esquema <strong>Prisma implementado</strong> es más maduro y coherente con el contrato REST, el simulador y el dashboard.</p>
+<p><strong>Veredicto:</strong> El esquema SQL está <strong>correcto y funcional</strong>, pero <strong>incompleto frente al diseño implementado</strong>. Las diferencias son <strong>deliberadas</strong> (pragmatismo vs. completitud operacional) y están justificadas por el alcance del prototipo.</p>
+</body></html>
