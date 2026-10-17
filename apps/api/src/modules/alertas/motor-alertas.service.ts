@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OperadorRegla, Severidad } from '@prisma/client';
+import { OperadorRegla, ReglaAlerta, Severidad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { describirUmbral, evaluar, ReglaEvaluable } from '../reglas/reglas.engine';
 
@@ -7,6 +7,13 @@ export interface MedicionParaEvaluar {
   id: bigint;
   valor: number | null;
   timestamp: Date;
+}
+
+/** Sensor en lo mínimo que el motor necesita para decidir el alcance de las reglas. */
+export interface SensorParaReglas {
+  id: string;
+  tipoVariableId: string;
+  dispositivo: { sistemaId: string };
 }
 
 export interface AlertaGenerada {
@@ -23,6 +30,10 @@ export interface AlertaGenerada {
  * variable. Antes de crear una alerta se respeta el *cooldown* de la regla:
  * si ya existe una alerta ACTIVA de la misma regla y sensor dentro de la
  * ventana, no se duplica (evita tormentas de alertas).
+ *
+ * La selección de reglas se separó de la evaluación para que la ingesta por
+ * lote (R-01) pueda cargar las reglas de todos los sensores en **una sola
+ * consulta** y reutilizarlas para las 500 lecturas del lote.
  */
 @Injectable()
 export class MotorAlertasService {
@@ -30,23 +41,55 @@ export class MotorAlertasService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async evaluarMedicion(
-    sensor: { id: string; tipoVariableId: string; dispositivo: { sistemaId: string } },
-    medicion: MedicionParaEvaluar,
-  ): Promise<AlertaGenerada[]> {
+  /**
+   * Reglas aplicables por sensor, resueltas de una sola consulta para todo el
+   * lote. Aplica RN-07: si el sensor tiene reglas propias, se ignoran las de
+   * su tipo de variable (evita alertas duplicadas por doble alcance).
+   */
+  async cargarReglasPara(sensores: Array<{ id: string; tipoVariableId: string }>): Promise<Map<string, ReglaAlerta[]>> {
+    const mapa = new Map<string, ReglaAlerta[]>();
+    if (sensores.length === 0) return mapa;
+
+    const sensorIds = [...new Set(sensores.map((s) => s.id))];
+    const tipoVariableIds = [...new Set(sensores.map((s) => s.tipoVariableId))];
     const reglas = await this.prisma.reglaAlerta.findMany({
       where: {
         activa: true,
-        OR: [{ sensorId: sensor.id }, { tipoVariableId: sensor.tipoVariableId }],
+        OR: [{ sensorId: { in: sensorIds } }, { tipoVariableId: { in: tipoVariableIds } }],
       },
     });
-    if (reglas.length === 0) return [];
 
-    // TS-05 / RN-07: si hay reglas específicas del sensor, prevalecen sobre
-    // las de tipo de variable (evita alertas duplicadas por doble alcance).
+    for (const sensor of sensores) {
+      mapa.set(sensor.id, this.seleccionarAplicables(reglas, sensor));
+    }
+    return mapa;
+  }
+
+  /** TS-05 / RN-07: las reglas del sensor prevalecen sobre las de su tipo. */
+  private seleccionarAplicables(reglas: ReglaAlerta[], sensor: { id: string; tipoVariableId: string }): ReglaAlerta[] {
     const porSensor = reglas.filter((r) => r.sensorId === sensor.id);
-    const aplicables = porSensor.length > 0 ? porSensor : reglas.filter((r) => r.sensorId === null);
+    if (porSensor.length > 0) return porSensor;
+    return reglas.filter((r) => r.sensorId === null && r.tipoVariableId === sensor.tipoVariableId);
+  }
 
+  /** Evalúa una única medición cargando sus reglas (camino de `POST /mediciones`). */
+  async evaluarMedicion(
+    sensor: SensorParaReglas,
+    medicion: MedicionParaEvaluar,
+  ): Promise<AlertaGenerada[]> {
+    const reglasPorSensor = await this.cargarReglasPara([sensor]);
+    return this.evaluarConReglas(sensor, medicion, reglasPorSensor.get(sensor.id) ?? []);
+  }
+
+  /**
+   * Evalúa una medición con reglas ya resueltas. Crea alertas respetando el
+   * cooldown; devuelve las alertas efectivamente generadas.
+   */
+  async evaluarConReglas(
+    sensor: SensorParaReglas,
+    medicion: MedicionParaEvaluar,
+    aplicables: ReglaAlerta[],
+  ): Promise<AlertaGenerada[]> {
     const generadas: AlertaGenerada[] = [];
 
     for (const regla of aplicables) {

@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
+import { OrigenMedicion, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DispositivoAutenticado } from '../../common/guards/dispositivo.guard';
 import { parseDuracion } from '../../common/utils/tiempo';
@@ -30,6 +30,19 @@ interface EstadoPendiente {
   timestamp: Date;
 }
 
+/** Lectura del lote ya validada y con el sensor resuelto (R-01). */
+interface LecturaValida {
+  sensor: SensorResuelto;
+  timestamp: Date;
+  valor?: number;
+  valorTexto?: string;
+  unidad: string;
+  idExterno?: string;
+  origen: OrigenMedicion;
+  calidad: 'OK' | 'SOSPECHOSA';
+  dto: CrearMedicionDto;
+}
+
 @Injectable()
 export class MedicionesService {
   private readonly logger = new Logger(MedicionesService.name);
@@ -45,14 +58,9 @@ export class MedicionesService {
   // ------------------------------------------------------------------
 
   /** `POST /mediciones` — valida, persiste y evalúa reglas (doc 06 §3.4). */
-  async ingerir(
-    dispositivo: DispositivoAutenticado,
-    dto: CrearMedicionDto,
-    cache?: Map<string, SensorResuelto>,
-    estadoDiferido?: Map<string, EstadoPendiente>,
-  ) {
+  async ingerir(dispositivo: DispositivoAutenticado, dto: CrearMedicionDto) {
     const timestamp = this.validarTimestamp(dto.timestamp);
-    const sensor = await this.resolverSensor(dispositivo.id, dto, cache);
+    const sensor = await this.resolverSensor(dispositivo.id, dto);
 
     if (dto.idExterno && (await this.buscarIdempotencia(dispositivo.id, dto.idExterno))) {
       return { duplicada: true as const, idExterno: dto.idExterno, mensaje: 'La medición ya había sido registrada' };
@@ -83,15 +91,7 @@ export class MedicionesService {
       });
     });
 
-    if (estadoDiferido) {
-      // En lote, el "último valor" se consolida al final (una escritura por sensor).
-      const previo = estadoDiferido.get(sensor.id);
-      if (!previo || timestamp >= previo.timestamp) {
-        estadoDiferido.set(sensor.id, { sensorId: sensor.id, unidad: medicion.unidad, dto, timestamp });
-      }
-    } else {
-      await this.actualizarEstado(sensor.id, dispositivo.id, dto, medicion.unidad, timestamp);
-    }
+    await this.actualizarEstado(sensor.id, dispositivo.id, dto, medicion.unidad, timestamp);
     const alertas = await this.evaluarReglasDe(sensor, medicion.id, dto.valor ?? null, timestamp);
 
     return {
@@ -105,28 +105,94 @@ export class MedicionesService {
     };
   }
 
-  /** `POST /mediciones/bulk` — hasta 500 lecturas; idempotente por `idExterno` (HU10). */
+  /**
+   * `POST /mediciones/bulk` — hasta 500 lecturas; idempotente por `idExterno`
+   * (HU10).
+   *
+   * R-01: la ingesta se hace por fases para no pagar ~4 viajes a la base de
+   * datos por lectura (que era el cuello de botella de TS-43):
+   *  1. validación en memoria (solo se consultan los sensores, una vez cada uno);
+   *  2. idempotencia en una consulta (`IN`) + deduplicación intra-lote;
+   *  3. inserción masiva (`createManyAndReturn`) + marcadores en una transacción;
+   *  4. reglas en una consulta para todo el lote y consolidación del estado.
+   */
   async ingerirBulk(dispositivo: DispositivoAutenticado, dto: BulkMedicionesDto) {
-    let aceptadas = 0;
-    let duplicadas = 0;
-    let alertasGeneradas = 0;
     const detalleRechazos: Array<{ indice: number; motivo: string }> = [];
-    // Cachés válidos durante la petición: el sensor no cambia y el estado final
-    // del tablero es el de la lectura más reciente (RF07).
+    // Caché válido durante la petición: el sensor no cambia dentro del lote.
     const cache = new Map<string, SensorResuelto>();
-    const estadoDiferido = new Map<string, EstadoPendiente>();
 
+    // Fase 1 · validar cada lectura sin tocar la base de datos más de lo necesario.
+    const validas: LecturaValida[] = [];
     for (let i = 0; i < dto.items.length; i++) {
+      const item = dto.items[i];
       try {
-        const resultado = await this.ingerir(dispositivo, dto.items[i], cache, estadoDiferido);
-        if (resultado.duplicada) {
-          duplicadas++;
-        } else {
-          aceptadas++;
-          alertasGeneradas += resultado.alertasGeneradas.length;
-        }
+        const timestamp = this.validarTimestamp(item.timestamp);
+        const sensor = await this.resolverSensor(dispositivo.id, item, cache);
+        validas.push({
+          sensor,
+          timestamp,
+          valor: item.valor,
+          valorTexto: item.valorTexto,
+          unidad: (item.unidad ?? sensor.unidad).slice(0, 20),
+          idExterno: item.idExterno,
+          origen: item.origen ?? this.inferirOrigen(timestamp),
+          calidad: calcularCalidad(
+            item.valor,
+            sensor.rangoMin ? Number(sensor.rangoMin) : null,
+            sensor.rangoMax ? Number(sensor.rangoMax) : null,
+          ),
+          dto: item,
+        });
       } catch (error) {
         detalleRechazos.push({ indice: i, motivo: error instanceof Error ? error.message : 'error' });
+      }
+    }
+
+    // Fase 2 · idempotencia en una sola consulta + deduplicación intra-lote.
+    const idExternos = [...new Set(validas.map((v) => v.idExterno).filter((x): x is string => Boolean(x)))];
+    const existentes = idExternos.length
+      ? await this.prisma.medicionIdempotencia.findMany({
+          where: { dispositivoId: dispositivo.id, idExterno: { in: idExternos } },
+          select: { idExterno: true },
+        })
+      : [];
+    const yaEnBd = new Set(existentes.map((e) => e.idExterno));
+    const vistos = new Set<string>();
+    const aInsertar: LecturaValida[] = [];
+    let duplicadas = 0;
+    for (const v of validas) {
+      if (v.idExterno) {
+        if (yaEnBd.has(v.idExterno) || vistos.has(v.idExterno)) {
+          duplicadas++;
+          continue;
+        }
+        vistos.add(v.idExterno);
+      }
+      aInsertar.push(v);
+    }
+
+    // Fase 3 · inserción masiva y marcadores de idempotencia en una transacción.
+    const ids = aInsertar.length > 0 ? await this.insertarLote(dispositivo.id, aInsertar) : [];
+
+    // Fase 4 · reglas para todo el lote (una consulta) y alertas.
+    const reglasPorSensor = await this.motor.cargarReglasPara(
+      aInsertar.map((v) => ({ id: v.sensor.id, tipoVariableId: v.sensor.tipoVariableId })),
+    );
+    let alertasGeneradas = 0;
+    const estadoDiferido = new Map<string, EstadoPendiente>();
+    for (let i = 0; i < aInsertar.length; i++) {
+      const v = aInsertar[i];
+      const alertas = await this.motor.evaluarConReglas(
+        v.sensor,
+        { id: ids[i], valor: v.valor ?? null, timestamp: v.timestamp },
+        reglasPorSensor.get(v.sensor.id) ?? [],
+      );
+      alertasGeneradas += alertas.length;
+
+      // El estado del tablero es el de la lectura más reciente por sensor (RF07).
+      const previo = estadoDiferido.get(v.sensor.id);
+      if (!previo || v.timestamp >= previo.timestamp) {
+        estadoDiferido.set(v.sensor.id, { sensorId: v.sensor.id, unidad: v.unidad, dto: v.dto, timestamp: v.timestamp });
       }
     }
 
@@ -134,12 +200,49 @@ export class MedicionesService {
 
     return {
       recibidas: dto.items.length,
-      aceptadas,
+      aceptadas: aInsertar.length,
       duplicadas,
       rechazadas: detalleRechazos.length,
       muestraRechazos: detalleRechazos.slice(0, 20),
       alertasGeneradas,
     };
+  }
+
+  /**
+   * Inserta el lote de lecturas y sus marcadores de idempotencia en una sola
+   * transacción. Devuelve los `id` correlacionados **en el orden de entrada**:
+   * `createManyAndReturn` no garantiza el orden de las filas devueltas, pero la
+   * secuencia de PostgreSQL asigna los `id` en el orden de inserción, de modo que
+   * ordenar por `id` reconstruye el orden de entrada (evita depender de la
+   * comparación exacta de `valor`, que la base redondea a 4 decimales).
+   */
+  private async insertarLote(dispositivoId: string, validas: LecturaValida[]): Promise<bigint[]> {
+    const creadas = await this.prisma.$transaction(async (tx) => {
+      const filas = await tx.medicion.createManyAndReturn({
+        data: validas.map((v) => ({
+          sensorId: v.sensor.id,
+          dispositivoId,
+          valor: v.valor !== undefined ? new Prisma.Decimal(v.valor) : null,
+          valorTexto: v.valorTexto ?? null,
+          unidad: v.unidad,
+          timestamp: v.timestamp,
+          idExterno: v.idExterno ?? null,
+          origen: v.origen,
+          calidad: v.calidad,
+        })),
+        select: { id: true },
+      });
+
+      const marcadores = validas
+        .filter((v) => v.idExterno)
+        .map((v) => ({ dispositivoId, idExterno: v.idExterno as string, sensorId: v.sensor.id }));
+      if (marcadores.length > 0) {
+        await tx.medicionIdempotencia.createMany({ data: marcadores });
+      }
+      return filas;
+    });
+
+    return creadas.map((f) => f.id).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   }
 
   private async evaluarReglasDe(
