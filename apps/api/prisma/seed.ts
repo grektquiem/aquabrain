@@ -68,14 +68,6 @@ const LECTURA = [
   'estado:leer',
 ];
 
-const TIPOS = [
-  { codigo: 'TEMPERATURA', nombre: 'Temperatura', ud: '°C', origen: 'REAL', min: 10, max: 35 },
-  { codigo: 'HUMEDAD', nombre: 'Humedad relativa', unidadDefecto: '%', unidad: '%', origenDato: 'REAL', valorMin: 30, valorMax: 90 },
-  { codigo: 'DISTANCIA', nombre: 'Nivel (distancia)', unidadDefecto: 'cm', origenDato: 'REAL', valorMin: 2, valorMax: 40 },
-  { codigo: 'PH', nombre: 'pH', unidadDefecto: 'pH', origenDato: 'SIMULADO', valorMin: 5.5, valorMax: 7.5 },
-  { codigo: 'CAUDAL', nombre: 'Caudal', unidadDefecto: 'L/min', origenDato: 'SIMULADO', valorMin: 0, valorMax: 5 },
-];
-
 /** Un sensor por tipo y dispositivo; valores base para la serie sintética. */
 const SENSORES = [
   { codigo: 'TEMP-01', nombre: 'Temperatura ambiente', tipo: 'TEMPERATURA', min: 10, max: 35, base: 23.5, amp: 3 },
@@ -301,7 +293,7 @@ async function main() {
           dispositivoId: s.dispositivoId,
           valor: new Prisma.Decimal(valor),
           unidad: s.unidad,
-          timestamp: new Date(inicio.getTime() + k * INTERVALO_MIN * 60 * 1000),
+          timestamp: new Date(inicio.getTime() + k * pasoMs),
           origen: 'ONLINE',
           calidad: 'OK',
         });

@@ -1,0 +1,42 @@
+contraseña AquaPlant
+
+AquaPlants2026!
+
+Desde la carpeta del proyecto, ejecuta en PowerShell:
+
+npm run dev:api
+
+Para iniciar el dashboard, usa otra terminal y ejecuta:
+
+npm run dev:web
+
+
+
+Usuarios demo (contraseña AquaPlants2026!):
+  admin@aqua.cl  (Administrador Aqua)
+  supervisor@aqua.cl  (Supervisora Aqua)
+  encargado@aqua.cl  (Encargado Aqua)
+
+
+
+PASO a PASO levantar proyecto
+
+# Terminal 1 — base de datos
+cd infra && docker compose up -d db
+
+# Terminal 2 — backend
+npm run dev:api
+
+# Terminal 3 — frontend
+npm run dev:web
+
+AL terminar, desde la terminal 1
+
+docker compose stop
+
+
+
+
+EMERGENCIA
+net stop winnat
+net start winnat

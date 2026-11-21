@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1075" width="1240" height="1075" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1240" height="1075" fill="#ffffff"/>
+
+  <!-- Título -->
+  <text x="620" y="36" text-anchor="middle" font-size="23" font-weight="700" fill="#0f172a">Vista lógica · Arquitectura en cuatro capas</text>
+
+  <!-- ============ CAPA 1: PRESENTACIÓN ============ -->
+  <g filter="url(#soft)">
+    <rect x="40" y="60" width="1160" height="175" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  </g>
+  <text x="620" y="93" text-anchor="middle" font-size="17" font-weight="700" fill="#1d4ed8" letter-spacing="1">CAPA DE PRESENTACIÓN</text>
+
+  <g>
+    <rect x="120" y="110" width="300" height="90" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="270" y="148" text-anchor="middle" font-size="17" font-weight="600" fill="#0f172a">React + Vite</text>
+    <text x="270" y="174" text-anchor="middle" font-size="14" fill="#475569">(Dashboard)</text>
+
+    <rect x="470" y="110" width="300" height="90" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="620" y="148" text-anchor="middle" font-size="17" font-weight="600" fill="#0f172a">App Android</text>
+    <text x="620" y="174" text-anchor="middle" font-size="14" fill="#475569">(existente)</text>
+
+    <rect x="820" y="110" width="300" height="90" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="970" y="148" text-anchor="middle" font-size="17" font-weight="600" fill="#0f172a">ESP32-S3</text>
+    <text x="970" y="174" text-anchor="middle" font-size="14" fill="#475569">(firmware)</text>
+  </g>
+
+  <!-- Flechas presentación -> API -->
+  <line x1="270" y1="237" x2="270" y2="284" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="284" y="267" font-size="13" font-weight="600" fill="#334155">HTTPS + JWT</text>
+
+  <line x1="620" y1="237" x2="620" y2="284" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="634" y="267" font-size="13" font-weight="600" fill="#334155">HTTPS + JWT</text>
+
+  <line x1="970" y1="237" x2="970" y2="284" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="984" y="267" font-size="13" font-weight="600" fill="#334155">HTTPS + APIKey</text>
+
+  <!-- ============ CAPA 2: APLICACIÓN (API) ============ -->
+  <g filter="url(#soft)">
+    <rect x="40" y="290" width="1160" height="170" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+  </g>
+  <text x="620" y="323" text-anchor="middle" font-size="17" font-weight="700" fill="#6d28d9" letter-spacing="1">CAPA DE APLICACIÓN (API)</text>
+
+  <rect x="80" y="340" width="1080" height="95" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+  <g>
+    <rect x="80" y="355" width="340" height="60" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="250" y="381" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Routers REST</text>
+    <text x="250" y="403" text-anchor="middle" font-size="13" fill="#475569">/auth · /api</text>
+
+    <rect x="450" y="355" width="340" height="60" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="620" y="381" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Middlewares JWT</text>
+    <text x="620" y="403" text-anchor="middle" font-size="13" fill="#475569">Rate limiting</text>
+
+    <rect x="820" y="355" width="340" height="60" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="990" y="381" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Validación Pydantic</text>
+    <text x="990" y="403" text-anchor="middle" font-size="13" fill="#475569">Manejo de errores</text>
+  </g>
+
+  <!-- Flecha API -> Dominio -->
+  <line x1="620" y1="462" x2="620" y2="498" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ CAPA 3: DOMINIO ============ -->
+  <g filter="url(#soft)">
+    <rect x="40" y="505" width="1160" height="300" rx="14" fill="#f0fdfa" stroke="#0d9488" stroke-width="2"/>
+  </g>
+  <text x="620" y="538" text-anchor="middle" font-size="17" font-weight="700" fill="#0f766e" letter-spacing="1">CAPA DE DOMINIO</text>
+
+  <!-- Fila 1 -->
+  <g>
+    <rect x="90" y="555" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="215" y="586" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Sistema</text>
+
+    <rect x="360" y="555" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="485" y="586" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Dispositivo</text>
+
+    <rect x="630" y="555" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="755" y="586" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Sensor</text>
+
+    <rect x="900" y="555" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="1025" y="586" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Medición</text>
+  </g>
+
+  <!-- Fila 2 -->
+  <g>
+    <rect x="90" y="620" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="215" y="651" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Usuario</text>
+
+    <rect x="360" y="620" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="485" y="651" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Rol</text>
+
+    <rect x="630" y="620" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="755" y="651" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Regla</text>
+
+    <rect x="900" y="620" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="1025" y="651" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Alerta</text>
+  </g>
+
+  <!-- Fila 3 -->
+  <g>
+    <rect x="225" y="685" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="350" y="716" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Cultivo</text>
+
+    <rect x="495" y="685" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="620" y="716" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Licencia</text>
+
+    <rect x="765" y="685" width="250" height="50" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.2"/>
+    <text x="890" y="716" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a">Log</text>
+  </g>
+
+  <!-- Servicios -->
+  <rect x="90" y="755" width="1060" height="40" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.2"/>
+  <text x="620" y="780" text-anchor="middle" font-size="14.5" font-weight="600" fill="#0f766e">Servicios:  Motor de alertas  ·  Validaciones  ·  Cálculo</text>
+
+  <!-- Flecha Dominio -> Datos -->
+  <line x1="620" y1="807" x2="620" y2="843" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ CAPA 4: DATOS ============ -->
+  <g filter="url(#soft)">
+    <rect x="40" y="850" width="1160" height="175" rx="14" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  </g>
+  <text x="620" y="883" text-anchor="middle" font-size="17" font-weight="700" fill="#b45309" letter-spacing="1">CAPA DE DATOS</text>
+
+  <g>
+    <rect x="120" y="900" width="300" height="90" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+    <text x="270" y="938" text-anchor="middle" font-size="17" font-weight="600" fill="#0f172a">PostgreSQL</text>
+    <text x="270" y="964" text-anchor="middle" font-size="14" fill="#475569">(fuente de verdad)</text>
+
+    <rect x="470" y="900" width="300" height="90" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+    <text x="620" y="938" text-anchor="middle" font-size="17" font-weight="600" fill="#0f172a">Redis</text>
+    <text x="620" y="964" text-anchor="middle" font-size="14" fill="#475569">(caché)</text>
+
+    <rect x="820" y="900" width="300" height="90" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+    <text x="970" y="938" text-anchor="middle" font-size="16" font-weight="600" fill="#0f172a">OpenAPI /</text>
+    <text x="970" y="964" text-anchor="middle" font-size="16" font-weight="600" fill="#0f172a">logs JSONB</text>
+  </g>
+
+  <!-- Pie -->
+  <text x="620" y="1055" text-anchor="middle" font-size="12.5" fill="#94a3b8">AquaPlants · AquaBrain — Vista lógica del sistema</text>
+</svg>

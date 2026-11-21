@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ReglasService } from './reglas.service';
 import { ActualizarReglaDto, CrearReglaDto, ProbarReglaDto } from './dto/regla.dto';
 import { RequierePermiso } from '../../common/decorators/requiere-permiso.decorator';
