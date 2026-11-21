@@ -1,32 +1,34 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import cookieParser from 'cookie-parser';
-import helmet from 'helmet';
+import { AppModule } from './app.module';
+import { aplicarEndurecimiento } from './config/http';
+import { configurarOpenApi } from './config/openapi';
+import { crearValidationPipe } from './common/pipes/validation.pipe';
 
 /**
- * Endurecimiento HTTP de la API (RNF01, TS-23).
+ * Arranque de la API AquaBrain (RF13, RNF01).
  *
- * Se aísla aquí para que la configuración que corre en pruebas sea
- * **exactamente** la de producción: si la prueba de CORS/cabeceras pasara,
- * es porque el binario real también las emite.
+ * Orden de endurecimiento: helmet → CORS explícito → cookies → validación y
+ * prefijo global → documentación OpenAPI.
  */
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  const config = app.get(ConfigService);
+  const logger = new Logger('Arranque');
 
-/** Orígenes autorizados por CORS, leídos de `CORS_ORIGINS` (lista separada por comas). */
-export function origenesPermitidos(config: ConfigService): string[] {
-  return (config.get<string>('CORS_ORIGINS') ?? 'http://localhost:5173')
-    .split(',')
-    .map((o) => o.trim())
-    .filter(Boolean);
-}
+  // Endurecimiento HTTP compartido con las pruebas de integración (TS-23).
+  aplicarEndurecimiento(app, config);
 
-export function aplicarEndurecimiento(app: NestExpressApplication, config: ConfigService): void {
-  app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-site' } }));
-  app.use(cookieParser());
-  app.useBodyParser('json', { limit: config.get<string>('BODY_LIMIT') ?? '1mb' });
-  app.enableCors({
-    origin: origenesPermitidos(config),
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Device-Key', 'X-Device-Code'],
-  });
-}
+  const prefijo = config.get<string>('API_PREFIX') ?? 'api/v1';
+  app.setGlobalPrefix(prefijo, { exclude: ['health'] });
+  app.useGlobalPipes(crearValidationPipe());
+  app.enableShutdownHooks();
+
+  configurarOpenApi(app, prefijo);
+
+  const puerto = Number(config.get('PORT') ?? 3000);
+  await app.listen(puerto);
+  logger.log(`API AquaBrain escuchando en http://localhost:${puerto}/${prefijo}`);
+  logger.log(`OpenAPI disponible en http://localhost:${puerto}/api/docs`);
