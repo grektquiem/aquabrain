@@ -38,7 +38,9 @@ function Marco() {
     <div className="marco">
       <header className="cabecera">
         <div className="cabecera__marca">
-          Aqua<span>Brain</span>
+          <strong>
+            Aqua<span>Brain</span>
+          </strong>
           <small>AquaPlants</small>
         </div>
         <nav className="cabecera__nav">

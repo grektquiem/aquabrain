@@ -220,6 +220,23 @@ code {
   min-width: 168px;
 }
 
+/* Casilla y texto en la misma línea (p. ej. "Mantener sesión iniciada"). */
+.campo--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.campo.campo--checkbox input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--agua-700);
+  cursor: pointer;
+}
+
 .campo input,
 .campo select,
 .entrada {
@@ -464,6 +481,11 @@ code {
   color: var(--ambar);
 }
 
+.pastilla--ok {
+  background: #dcfce7;
+  color: var(--verde);
+}
+
 .pastilla--baja,
 .pastilla--info {
   background: var(--agua-100);
@@ -653,7 +675,122 @@ code {
 }
 .cabecera-seccion {
   display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
   margin-bottom: 1rem;
+}
+
+/* ── Celular y tableta angosta ──────────────────────────────────────── */
+@media (max-width: 720px) {
+  .cabecera {
+    padding: 10px 16px;
+    gap: 10px 12px;
+  }
+
+  /* La navegación baja a su propia fila, a todo el ancho, y se reparte en
+     varias líneas si hace falta: ningún enlace queda fuera de la pantalla. */
+  .cabecera__nav {
+    order: 3;
+    width: 100%;
+    margin-inline-start: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 4px;
+  }
+
+  .cabecera__nav a {
+    padding: 7px 8px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Las tablas conservan un ancho legible y se desplazan dentro de su tarjeta. */
+  .tabla {
+    min-width: 560px;
+  }
+
+  .tabla .mono {
+    white-space: nowrap;
+  }
+
+  /* Tablas con acciones: cada fila pasa a ser una tarjeta con "etiqueta: valor",
+     para que los botones nunca queden fuera de la vista. */
+  .tabla--apilada {
+    min-width: 0;
+  }
+
+  .tabla--apilada thead {
+    display: none;
+  }
+
+  .tabla--apilada tr {
+    display: block;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--gris-300);
+  }
+
+  .tabla--apilada tr:last-child {
+    border-bottom: none;
+  }
+
+  .tabla--apilada td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 14px;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .tabla--apilada td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gris-600);
+    text-align: left;
+  }
+
+  .cabecera__sesion {
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .cabecera__sesion > div {
+    min-width: 0;
+  }
+
+  .cabecera__nombre {
+    max-width: 40vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .contenido {
+    padding: 16px;
+  }
+
+  .modal-fondo {
+    padding: 16px;
+  }
+
+  .modal-caja {
+    padding: 1.25rem !important;
+  }
+
+  .alerta__cuerpo {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  /* El subtítulo de la marca no cabe junto a la sesión en pantallas angostas. */
+  .cabecera__marca small {
+    display: none;
+  }
 }
 
 /* Estilos para impresión / PDF */

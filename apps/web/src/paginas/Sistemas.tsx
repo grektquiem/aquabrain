@@ -134,7 +134,7 @@ export function PaginaSistemas() {
       </header>
 
       <div className="tabla-envoltura">
-        <table className="tabla">
+        <table className="tabla tabla--apilada">
           <thead>
             <tr>
               <th>Código</th>
@@ -150,15 +150,15 @@ export function PaginaSistemas() {
             )}
             {sistemas?.map((sis) => (
               <tr key={sis.id}>
-                <td className="mono">{sis.codigo}</td>
-                <td><strong>{sis.nombre}</strong></td>
-                <td>{sis.ubicacion || '—'}</td>
-                <td>
+                <td className="mono" data-etiqueta="Código">{sis.codigo}</td>
+                <td data-etiqueta="Nombre"><strong>{sis.nombre}</strong></td>
+                <td data-etiqueta="Ubicación">{sis.ubicacion || '—'}</td>
+                <td data-etiqueta="Estado">
                   <span className={`pastilla pastilla--${sis.estado === 'ACTIVO' ? 'ok' : 'info'}`}>
                     {sis.estado}
                   </span>
                 </td>
-                <td>
+                <td data-etiqueta="Acciones">
                   {/* Solo el Administrador ve los botones de Editar y Eliminar */}
                   {esAdmin ? (
                     <div style={{ display: 'flex', gap: '0.5rem' }}>

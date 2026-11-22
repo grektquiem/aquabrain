@@ -52,19 +52,19 @@ export function PaginaInforme() {
   return (
     <div className="pila informe-pagina">
       {/* CABECERA DEL INFORME (se oculta al imprimir los botones) */}
-      <header className="cabecera-seccion" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <header className="cabecera-seccion" style={{ marginBottom: 0 }}>
         <div>
           <h2 className="seccion__titulo">Informe de Gestión</h2>
           <p style={{ color: '#64748b' }}>Generado el {new Date().toLocaleString('es-CL')}</p>
         </div>
-        <div className="no-imprimir" style={{ display: 'flex', gap: '1rem' }}>
+        <div className="no-imprimir" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button className="boton boton--secundario" onClick={exportarCSV}>Exportar CSV</button>
           <button className="boton boton--primario" onClick={imprimirPDF}>Imprimir / PDF</button>
         </div>
       </header>
 
       {/* TARJETAS DE MÉTRICAS */}
-      <section className="fila-tarjetas" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <section className="fila-tarjetas">
         <article className="indicador">
           <p className="indicador__etiqueta">Sistemas Registrados</p>
           <p className="indicador__valor">{data.sistemas}</p>
@@ -86,8 +86,9 @@ export function PaginaInforme() {
       </section>
 
       {/* TABLA DE ÚLTIMAS ALERTAS */}
-      <section className="tabla-envoltura">
-        <h3 style={{ marginBottom: '1rem' }}>Últimas 5 Alertas del Sistema</h3>
+      <section>
+        <h3 className="seccion__titulo">Últimas 5 alertas del sistema</h3>
+        <div className="tabla-envoltura">
         <table className="tabla">
           <thead>
             <tr>
@@ -115,6 +116,7 @@ export function PaginaInforme() {
             )}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );
