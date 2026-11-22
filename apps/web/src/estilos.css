@@ -655,3 +655,13 @@ code {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 1rem;
 }
+
+/* Estilos para impresión / PDF */
+@media print {
+  body { background: white; }
+  .cabecera, .pie { display: none !important; }
+  .no-imprimir { display: none !important; }
+  .contenido { padding: 0; margin: 0; }
+  .indicador { border: 1px solid #ccc !important; box-shadow: none !important; }
+  .tabla { border: 1px solid #ccc; }
+}

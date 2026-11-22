@@ -23,6 +23,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
 import { CatalogosModule } from './modules/catalogos/catalogos.module';
 import { HealthModule } from './modules/health/health.module';
+import { ReportesModule } from './modules/reportes/reportes.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { HealthModule } from './modules/health/health.module';
     AuditoriaModule,
     CatalogosModule,
     HealthModule,
+    ReportesModule,
   ],
   providers: [
     // Orden de guardas: límite de tasa → autenticación → autorización por permiso.

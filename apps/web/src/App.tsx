@@ -7,10 +7,11 @@ import { PaginaAlertas } from './paginas/Alertas';
 import { API_URL } from './api/cliente';
 import { BannerCookies } from './componentes/BannerCookies';
 import { PaginaSistemas } from './paginas/Sistemas';
+import { PaginaInforme } from './paginas/Informe';
 
 /** Rutas y armazón del dashboard. La sesión vive en memoria y se recupera del refresco. */
 function Marco() {
-  const { usuario, cargando, cerrar, puede } = useSesion();
+  const { usuario, cargando, cerrar} = useSesion();
   const ubicacion = useLocation();
 
   if (cargando) {
@@ -40,6 +41,7 @@ function Marco() {
           <NavLink to="/historicos">Históricos</NavLink>
           <NavLink to="/alertas">Alertas</NavLink>
           <NavLink to="/sistemas">Sistemas</NavLink>
+          <NavLink to="/informe">Informe</NavLink>
         </nav>
         <div className="cabecera__sesion">
           <div>
@@ -56,10 +58,14 @@ function Marco() {
         <Routes>
           <Route path="/" element={<PaginaPanel />} />
           <Route path="/historicos" element={<PaginaHistoricos />} />
-          <Route path="/alertas" element={puede('alerta:leer') ? <PaginaAlertas /> : <SinPermiso />} />
+          {/* Desbloqueamos Alertas */}
+          <Route path="/alertas" element={<PaginaAlertas />} />
+          {/* Desbloqueamos Sistemas (si la pusiste con validación) */}
+          <Route path="/sistemas" element={<PaginaSistemas />} />
+          {/* Desbloqueamos Informe */}
+          <Route path="/informe" element={<PaginaInforme />} />
+          
           <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/sistemas" element={puede('sistema:leer') ? <PaginaSistemas /> : <SinPermiso />} 
-/>
         </Routes>
       </main>
 
@@ -70,9 +76,6 @@ function Marco() {
   );
 }
 
-function SinPermiso() {
-  return <p className="aviso">Su rol no tiene el permiso <code>alerta:leer</code>.</p>;
-}
 
 export function App() {
   return (
