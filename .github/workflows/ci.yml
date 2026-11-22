@@ -102,5 +102,8 @@ jobs:
       - name: Instalar dependencias (workspaces)
         working-directory: .
         run: npm ci
+      - name: Generar cliente Prisma
+        run: npx prisma generate
+        working-directory: apps/api  
       - name: Verificar tipos y compilar
         run: npm run build
