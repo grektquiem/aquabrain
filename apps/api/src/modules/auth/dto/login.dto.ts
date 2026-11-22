@@ -1,16 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
+/**
+ * Credenciales de inicio de sesión.
+ *
+ * A propósito no se valida formato ni longitud (correo, mínimo de 10
+ * caracteres, etc.): esos errores revelarían la política de contraseñas y
+ * darían respuestas distintas a "Credenciales inválidas". La política se
+ * aplica al crear o cambiar la contraseña; aquí cualquier valor incorrecto
+ * recibe el 401 genérico de AuthService.
+ */
 export class LoginDto {
   @ApiProperty({ example: 'admin@aqua.cl' })
-  @IsEmail()
-  @MaxLength(180)
+  @IsString()
   email!: string;
 
-  @ApiProperty({ example: 'AquaPlants2026!', minLength: 10 })
+  @ApiProperty({ example: 'AquaPlants2026!' })
   @IsString()
-  @MinLength(10)
-  @MaxLength(128)
   password!: string;
 
   @ApiPropertyOptional({

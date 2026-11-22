@@ -8,6 +8,9 @@ import { parseDuracion } from '../../common/utils/tiempo';
 
 const MAX_INTENTOS = 5;
 const BLOQUEO_MINUTOS = 15;
+/** Topes del login: coinciden con los límites del alta de usuarios. */
+const MAX_EMAIL = 180;
+const MAX_PASSWORD = 128;
 
 export interface SesionEmitida {
   accessToken: string;
@@ -42,12 +45,16 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string, ip?: string, userAgent?: string, rememberMe = false,): Promise<SesionEmitida> {
-    const usuario = await this.prisma.usuario.findUnique({
-      where: { email: email.toLowerCase() },
-      include: { rol: { include: { rolPermisos: { include: { permiso: true } } } } },
-    });
-
     const generico = new UnauthorizedException('Credenciales inválidas');
+
+    // Valores fuera de rango: mismo 401 genérico (y mismo coste) que un correo inexistente.
+    const fueraDeRango = email.length > MAX_EMAIL || password.length > MAX_PASSWORD;
+    const usuario = fueraDeRango
+      ? null
+      : await this.prisma.usuario.findUnique({
+          where: { email: email.toLowerCase() },
+          include: { rol: { include: { rolPermisos: { include: { permiso: true } } } } },
+        });
 
     if (!usuario || !usuario.activo) {
       // Coste constante: se compara contra un hash ficticio para no filtrar por tiempo.

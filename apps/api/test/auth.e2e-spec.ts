@@ -112,6 +112,19 @@ describe('Autenticación (e2e)', () => {
     expect(fila.bloqueadoHasta).toBeNull();
   });
 
+  it('TS-13: credenciales mal formadas reciben el mismo 401 genérico', async () => {
+    const { email } = await usuarioDesechable('Supervisor');
+    const casos = [
+      { email, password: 'corta' },
+      { email: 'no-es-un-correo', password: 'ClaveInventada2026!' },
+      { email, password: 'x'.repeat(500) },
+    ];
+    for (const c of casos) {
+      const res = await entrar(c.email, c.password).expect(401);
+      expect(res.body.mensaje).toBe('Credenciales inválidas');
+    }
+  });
+
   it('TS-13: la respuesta no revela si el correo existe', async () => {
     const inexistente = await entrar(`nadie-${Date.now()}@aqua.cl`, 'ClaveInventada2026!').expect(401);
     const existente = await entrar('supervisor@aqua.cl', 'ClaveInventada2026!').expect(401);
