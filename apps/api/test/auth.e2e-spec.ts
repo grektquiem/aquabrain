@@ -91,6 +91,27 @@ describe('Autenticación (e2e)', () => {
     expect(auditoria).toBeGreaterThanOrEqual(5);
   });
 
+  it('TS-13: un bloqueo vencido reinicia el contador al siguiente intento', async () => {
+    const { id, email } = await usuarioDesechable('Encargado');
+
+    for (let i = 1; i <= 5; i += 1) {
+      await entrar(email, 'ClaveIncorrecta2026!').expect(401);
+    }
+
+    // Simula que pasaron los 15 minutos de bloqueo.
+    await prisma().usuario.update({
+      where: { id },
+      data: { bloqueadoHasta: new Date(Date.now() - 60_000) },
+    });
+
+    const res = await entrar(email, 'ClaveIncorrecta2026!').expect(401);
+    expect(res.body.mensaje).toBe('Credenciales inválidas');
+
+    const fila = await prisma().usuario.findUniqueOrThrow({ where: { id } });
+    expect(fila.intentosFallidos).toBe(1);
+    expect(fila.bloqueadoHasta).toBeNull();
+  });
+
   it('TS-13: la respuesta no revela si el correo existe', async () => {
     const inexistente = await entrar(`nadie-${Date.now()}@aqua.cl`, 'ClaveInventada2026!').expect(401);
     const existente = await entrar('supervisor@aqua.cl', 'ClaveInventada2026!').expect(401);

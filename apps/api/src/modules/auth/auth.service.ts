@@ -26,7 +26,7 @@ export interface SesionEmitida {
 /**
  * Autenticación (doc 06 §2.1/§2.2).
  * - Contraseñas con bcrypt (coste configurable).
- * - Bloqueo temporal tras 5 intentos fallidos en 15 minutos (TH-02).
+ * - Bloqueo temporal de 15 minutos tras 5 intentos fallidos consecutivos (TH-02).
  * - Mensaje genérico: no revela si el correo existe (A07).
  * - Refresh **rotativo**: el token usado se revoca; reutilizar uno revocado
  *   invalida toda la cadena de sesión del usuario.
@@ -58,18 +58,29 @@ export class AuthService {
     if (usuario.bloqueadoHasta && usuario.bloqueadoHasta > new Date()) {
       throw new UnauthorizedException('Cuenta bloqueada temporalmente por intentos fallidos');
     }
+    if (usuario.bloqueadoHasta) {
+      // El bloqueo ya venció: se parte de cero antes de evaluar la contraseña.
+      await this.prisma.usuario.update({
+        where: { id: usuario.id },
+        data: { intentosFallidos: 0, bloqueadoHasta: null },
+      });
+    }
 
     const correcta = await bcrypt.compare(password, usuario.passwordHash);
     if (!correcta) {
-      const intentos = usuario.intentosFallidos + 1;
-      const bloquear = intentos >= MAX_INTENTOS;
-      await this.prisma.usuario.update({
+      // Incremento atómico: evita perder intentos con peticiones concurrentes.
+      const { intentosFallidos: intentos } = await this.prisma.usuario.update({
         where: { id: usuario.id },
-        data: {
-          intentosFallidos: intentos,
-          bloqueadoHasta: bloquear ? new Date(Date.now() + BLOQUEO_MINUTOS * 60_000) : null,
-        },
+        data: { intentosFallidos: { increment: 1 } },
+        select: { intentosFallidos: true },
       });
+      const bloquear = intentos >= MAX_INTENTOS;
+      if (bloquear) {
+        await this.prisma.usuario.update({
+          where: { id: usuario.id },
+          data: { bloqueadoHasta: new Date(Date.now() + BLOQUEO_MINUTOS * 60_000) },
+        });
+      }
       await this.registrarIntentoFallido(email, `credenciales inválidas (intento ${intentos})`, ip, usuario.id);
       if (bloquear) this.logger.warn(`Cuenta ${email} bloqueada ${BLOQUEO_MINUTOS} min tras ${MAX_INTENTOS} intentos (TS-13)`);
       throw generico;
