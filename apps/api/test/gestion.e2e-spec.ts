@@ -67,11 +67,22 @@ describe('Gestión de sistemas, cultivos, usuarios y reglas (e2e)', () => {
         .expect(200);
       expect(actualizado.body.nombre).toBe('Invernadero renombrado');
 
+      // Con un cultivo vinculado, la FK Restrict impide el borrado físico → lógico.
+      await prismaDe(app).cultivo.create({
+        data: {
+          sistemaId: creado.body.id,
+          nombre: 'Cultivo vinculado',
+          especie: 'Lactuca sativa',
+          fechaInicio: new Date(),
+        },
+      });
+
       const desactivado = await request(app.getHttpServer())
         .delete(url(`/sistemas/${creado.body.id}`))
         .set(auth(admin.accessToken))
         .expect(200);
       expect(desactivado.body.estado).toBe('INACTIVO');
+      expect(desactivado.body.eliminado).toBe(false);
 
       // El borrado es lógico: sigue existiendo y se recupera con el filtro.
       const listado = await request(app.getHttpServer())
@@ -85,6 +96,26 @@ describe('Gestión de sistemas, cultivos, usuarios y reglas (e2e)', () => {
         .set(auth(admin.accessToken))
         .expect(200);
       expect(soloActivos.body.some((s: { id: string }) => s.id === creado.body.id)).toBe(false);
+    });
+
+    it('elimina físicamente un sistema sin nada vinculado', async () => {
+      const codigo = `SIS-DEL-${Date.now().toString(36)}`.toUpperCase().slice(0, 30);
+      const creado = await request(app.getHttpServer())
+        .post(url('/sistemas'))
+        .set(auth(admin.accessToken))
+        .send({ codigo, nombre: 'Sistema creado por error' })
+        .expect(201);
+
+      const borrado = await request(app.getHttpServer())
+        .delete(url(`/sistemas/${creado.body.id}`))
+        .set(auth(admin.accessToken))
+        .expect(200);
+      expect(borrado.body.eliminado).toBe(true);
+
+      await request(app.getHttpServer())
+        .get(url(`/sistemas/${creado.body.id}`))
+        .set(auth(admin.accessToken))
+        .expect(404);
     });
 
     it('rechaza un código duplicado con 409 y un identificador inexistente con 404', async () => {

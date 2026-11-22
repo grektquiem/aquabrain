@@ -58,6 +58,49 @@ describe('Ingesta de mediciones (e2e)', () => {
     }
   });
 
+  // ── Sistema dado de baja ────────────────────────────────────────────────
+
+  it('un dispositivo de un sistema inactivo no puede ingerir (403) y vuelve a reportar al reactivarlo', async () => {
+    const t = await crearTenant(app, 'sisinac', ['TEMP-01']);
+    try {
+      // El dispositivo vinculado obliga a borrado lógico.
+      const baja = await request(app.getHttpServer())
+        .delete(url(`/sistemas/${t.sistemaId}`))
+        .set(auth(token))
+        .expect(200);
+      expect(baja.body.eliminado).toBe(false);
+
+      const rechazo = await request(app.getHttpServer())
+        .post(url('/mediciones'))
+        .set(t.deviceHeaders)
+        .send({ sensorCodigo: 'TEMP-01', valor: 24.5, timestamp: instante() })
+        .expect(403);
+      expect(rechazo.body.mensaje).toMatch(/inactivo/i);
+      expect(await prisma().medicion.count({ where: { dispositivoId: t.dispositivoId } })).toBe(0);
+
+      // Una clave inválida sigue respondiendo 401: el estado no se revela sin autenticar.
+      await request(app.getHttpServer())
+        .post(url('/mediciones'))
+        .set({ 'X-Device-Key': 'ak_live_clave-invalida', 'X-Device-Code': t.deviceHeaders['X-Device-Code'] })
+        .send({ sensorCodigo: 'TEMP-01', valor: 24.5, timestamp: instante() })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .patch(url(`/sistemas/${t.sistemaId}`))
+        .set(auth(token))
+        .send({ estado: 'ACTIVO' })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .post(url('/mediciones'))
+        .set(t.deviceHeaders)
+        .send({ sensorCodigo: 'TEMP-01', valor: 24.5, timestamp: instante() })
+        .expect(201);
+    } finally {
+      await t.limpiar();
+    }
+  });
+
   // ── TS-10 · timestamp futuro ─────────────────────────────────────────────
 
   it('TS-10: un timestamp a más de 5 minutos en el futuro se rechaza y no se persiste', async () => {

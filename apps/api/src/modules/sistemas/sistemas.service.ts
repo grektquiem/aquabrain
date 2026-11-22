@@ -57,14 +57,29 @@ export class SistemasService {
     return this.prisma.sistema.update({ where: { id }, data: dto, select: PROYECCION });
   }
 
-  /** Borrado lógico (RF04·RN-04): un sistema con histórico no se elimina físicamente. */
-  async desactivar(id: string) {
+  /**
+   * Eliminación híbrida (RF04·RN-04):
+   *  - Sin nada vinculado (dispositivos, cultivos, alertas, eventos) → borrado físico.
+   *  - Con vínculos → borrado lógico (estado INACTIVO), preservando el histórico.
+   *
+   * Todas las FK hacia `sistema` son `onDelete: Restrict`, así que la propia base
+   * decide de forma atómica: si el DELETE viola una FK (P2003) se desactiva.
+   * Evita la carrera de "contar dependencias y luego borrar".
+   */
+  async eliminar(id: string) {
     await this.obtener(id);
-    return this.prisma.sistema.update({
-      where: { id },
-      data: { estado: 'INACTIVO' },
-      select: PROYECCION,
-    });
+    try {
+      const borrado = await this.prisma.sistema.delete({ where: { id }, select: PROYECCION });
+      return { ...borrado, eliminado: true as const };
+    } catch (e) {
+      if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003')) throw e;
+      const desactivado = await this.prisma.sistema.update({
+        where: { id },
+        data: { estado: 'INACTIVO' },
+        select: PROYECCION,
+      });
+      return { ...desactivado, eliminado: false as const };
+    }
   }
 }
 

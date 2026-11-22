@@ -19,9 +19,12 @@ export class DashboardService {
   ) {}
 
   async estado(sistemaId?: string) {
+    // Los sistemas dados de baja (borrado lógico) no aparecen en el tablero: sus
+    // dispositivos ya no reportan y figurarían como SIN_COMUNICACION.
+    const sistemaVigente = { estado: { not: 'INACTIVO' } } satisfies Prisma.SistemaWhereInput;
     const [dispositivos, ultimos, sensores, alertas] = await Promise.all([
       this.prisma.dispositivo.findMany({
-        where: { ...(sistemaId ? { sistemaId } : {}), activo: true },
+        where: { ...(sistemaId ? { sistemaId } : {}), activo: true, sistema: sistemaVigente },
         select: {
           id: true,
           codigo: true,
@@ -39,7 +42,7 @@ export class DashboardService {
         GROUP BY dispositivo_id
       `),
       this.prisma.estadoSensorActual.findMany({
-        where: sistemaId ? { dispositivo: { sistemaId } } : {},
+        where: { dispositivo: { ...(sistemaId ? { sistemaId } : {}), sistema: sistemaVigente } },
         select: {
           sensorId: true,
           valor: true,
@@ -53,7 +56,7 @@ export class DashboardService {
       }),
       this.prisma.alerta.groupBy({
         by: ['severidad'],
-        where: { estado: 'ACTIVA', ...(sistemaId ? { sistemaId } : {}) },
+        where: { estado: 'ACTIVA', ...(sistemaId ? { sistemaId } : {}), sistema: sistemaVigente },
         _count: { _all: true },
       }),
     ]);

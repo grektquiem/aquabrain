@@ -38,8 +38,13 @@ export class SistemasController {
 
   @Delete(':id')
   @RequierePermiso('sistema:escribir')
-  @ApiOperation({ summary: 'Desactiva el sistema (borrado lógico)' })
-  desactivar(@Param('id', ParseUUIDPipe) id: string) {
-    return this.sistemas.desactivar(id);
+  @ApiOperation({
+    summary: 'Elimina el sistema',
+    description:
+      'Borrado físico si no tiene dispositivos, cultivos, alertas ni eventos vinculados; ' +
+      'en caso contrario se desactiva (estado INACTIVO). `eliminado` indica cuál se aplicó.',
+  })
+  eliminar(@Param('id', ParseUUIDPipe) id: string) {
+    return this.sistemas.eliminar(id);
   }
 }

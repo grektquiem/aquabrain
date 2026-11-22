@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { peticion } from '../api/cliente';
+import type { EstadoSistema } from '../api/tipos';
 import { useSesion } from '../sesion/ContextoSesion';
-
-export type EstadoSistema = 'ACTIVO' | 'INACTIVO' | 'MANTENCION';
 
 export interface Sistema {
   id: string;
@@ -56,8 +55,17 @@ export function PaginaSistemas() {
   });
 
   const eliminar = useMutation({
-    mutationFn: (id: string) => peticion(`/sistemas/${id}`, { method: 'DELETE' }),
-    onSuccess: () => cliente.invalidateQueries({ queryKey: ['sistemas'] }),
+    mutationFn: (id: string) =>
+      peticion<{ nombre: string; eliminado: boolean }>(`/sistemas/${id}`, { method: 'DELETE' }),
+    onSuccess: (res) => {
+      cliente.invalidateQueries({ queryKey: ['sistemas'] });
+      if (!res.eliminado) {
+        alert(
+          `El sistema "${res.nombre}" tiene dispositivos, cultivos o histórico vinculado, ` +
+            'por lo que se desactivó en lugar de eliminarse.',
+        );
+      }
+    },
     onError: (err: any) => alert(err.message || 'Error al eliminar el sistema'),
   });
 
@@ -99,7 +107,12 @@ export function PaginaSistemas() {
   }
 
   function confirmarEliminar(id: string, nombre: string) {
-    if (window.confirm(`¿Estás seguro de eliminar el sistema "${nombre}"?`)) {
+    if (
+      window.confirm(
+        `¿Estás seguro de eliminar el sistema "${nombre}"?\n\n` +
+          'Si tiene dispositivos, cultivos o histórico vinculado, se desactivará en lugar de eliminarse.',
+      )
+    ) {
       eliminar.mutate(id);
     }
   }

@@ -10,7 +10,7 @@
 export type Severidad = 'ALTA' | 'MEDIA' | 'BAJA' | 'INFO';
 export type EstadoAlerta = 'ACTIVA' | 'RESUELTA';
 export type Frescura = 'EN_LINEA' | 'SIN_COMUNICACION' | 'INACTIVO' | 'DESCONOCIDO';
-export type EstadoSistema = 'ACTIVO' | 'INACTIVO' | 'MANTENIMIENTO';
+export type EstadoSistema = 'ACTIVO' | 'MANTENCION' | 'INACTIVO';
 
 export interface Sesion {
   accessToken: string;

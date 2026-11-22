@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -43,7 +49,10 @@ export class DispositivoGuard implements CanActivate {
       throw new UnauthorizedException('Credencial de dispositivo inválida');
     }
 
-    const dispositivo = await this.prisma.dispositivo.findUnique({ where: { codigo } });
+    const dispositivo = await this.prisma.dispositivo.findUnique({
+      where: { codigo },
+      include: { sistema: { select: { estado: true } } },
+    });
     if (!dispositivo || !dispositivo.activo) {
       throw new UnauthorizedException('Credencial de dispositivo inválida');
     }
@@ -52,6 +61,14 @@ export class DispositivoGuard implements CanActivate {
     const coincide = await bcrypt.compare(apiKey + pepper, dispositivo.apiKeyHash);
     if (!coincide) {
       throw new UnauthorizedException('Credencial de dispositivo inválida');
+    }
+
+    // Un sistema dado de baja (borrado lógico) no admite ingesta: sus dispositivos
+    // no deben seguir generando mediciones ni alertas. Se comprueba tras validar la
+    // clave para no revelar el estado a quien no se autenticó. Es reversible: al
+    // reactivar el sistema, sus dispositivos vuelven a reportar sin tocar nada más.
+    if (dispositivo.sistema.estado === 'INACTIVO') {
+      throw new ForbiddenException('El sistema del dispositivo está inactivo');
     }
 
     const autenticado: DispositivoAutenticado = {
