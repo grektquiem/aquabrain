@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { peticion } from '../api/cliente';
+import { useSesion } from '../sesion/ContextoSesion';
 
 export type EstadoSistema = 'ACTIVO' | 'INACTIVO' | 'MANTENCION';
 
@@ -15,12 +16,16 @@ export interface Sistema {
 
 export function PaginaSistemas() {
   const cliente = useQueryClient();
+  const { usuario } = useSesion();
+  
+  // Lógica de roles: solo el Administrador puede crear, editar o eliminar
+  const esAdmin = usuario?.rol === 'Administrador';
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   
   // Campos del formulario
-  const [codigo, setCodigo] = useState(''); // <-- NUEVO CAMPO
+  const [codigo, setCodigo] = useState(''); 
   const [nombre, setNombre] = useState('');
   const [ubicacion, setUbicacion] = useState('');
   const [estado, setEstado] = useState<EstadoSistema>('ACTIVO');
@@ -28,7 +33,7 @@ export function PaginaSistemas() {
 
   const { data: sistemas, isLoading, isError, error: errorCarga } = useQuery({
     queryKey: ['sistemas'],
-    queryFn: () => peticion<Sistema[]>('/sistemas'),
+    queryFn: () => peticion<Sistema[]>('/sistemas?incluirInactivos=true'),
   });
 
   const crear = useMutation({
@@ -58,7 +63,7 @@ export function PaginaSistemas() {
 
   function abrirCrear() {
     setEditandoId(null);
-    setCodigo(''); // Limpiamos código
+    setCodigo('');
     setNombre('');
     setUbicacion('');
     setEstado('ACTIVO');
@@ -68,7 +73,7 @@ export function PaginaSistemas() {
 
   function abrirEditar(sistema: Sistema) {
     setEditandoId(sistema.id);
-    setCodigo(sistema.codigo); // Cargamos código
+    setCodigo(sistema.codigo); 
     setNombre(sistema.nombre);
     setUbicacion(sistema.ubicacion || '');
     setEstado(sistema.estado);
@@ -84,7 +89,6 @@ export function PaginaSistemas() {
   function guardar(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    // Agregamos codigo al payload
     const payload = { codigo, nombre, ubicacion: ubicacion || null, estado };
 
     if (editandoId) {
@@ -107,9 +111,13 @@ export function PaginaSistemas() {
     <div className="pila">
       <header className="cabecera-seccion" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 className="seccion__titulo">Gestión de Sistemas</h2>
-        <button className="boton boton--primario" onClick={abrirCrear}>
-          + Nuevo Sistema
-        </button>
+        
+        {/* 👇 Solo el Administrador ve el botón de Crear */}
+        {esAdmin && (
+          <button className="boton boton--primario" onClick={abrirCrear}>
+            + Nuevo Sistema
+          </button>
+        )}
       </header>
 
       <div className="tabla-envoltura">
@@ -138,10 +146,15 @@ export function PaginaSistemas() {
                   </span>
                 </td>
                 <td>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="boton boton--secundario" onClick={() => abrirEditar(sis)}>Editar</button>
-                    <button className="boton boton--peligro" onClick={() => confirmarEliminar(sis.id, sis.nombre)}>Eliminar</button>
-                  </div>
+                  {/* 👇 Solo el Administrador ve los botones de Editar y Eliminar */}
+                  {esAdmin ? (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="boton boton--secundario" onClick={() => abrirEditar(sis)}>Editar</button>
+                      <button className="boton boton--peligro" onClick={() => confirmarEliminar(sis.id, sis.nombre)}>Eliminar</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: '#64748b', fontSize: '0.875rem' }}>Solo lectura</span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -156,7 +169,6 @@ export function PaginaSistemas() {
             
             <form onSubmit={guardar} className="pila" style={{ marginTop: '1rem' }}>
               
-              {/* INPUT DE CÓDIGO NUEVO */}
               <label className="campo" style={{ display: 'block', marginBottom: '1rem' }}>
                 <span>Código (Ej. SIS-01)</span>
                 <input 
@@ -202,7 +214,7 @@ export function PaginaSistemas() {
                 >
                   <option value="ACTIVO">Activo</option>
                   <option value="INACTIVO">Inactivo</option>
-                  <option value="MANTENCION">Mantenimiento</option>
+                  <option value="MANTENCION">Mantenimiento</option> 
                 </select>
               </label>
 

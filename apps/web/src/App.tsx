@@ -11,7 +11,7 @@ import { PaginaInforme } from './paginas/Informe';
 
 /** Rutas y armazón del dashboard. La sesión vive en memoria y se recupera del refresco. */
 function Marco() {
-  const { usuario, cargando, cerrar} = useSesion();
+  const { usuario, cargando, cerrar } = useSesion();
   const ubicacion = useLocation();
 
   if (cargando) {
@@ -27,6 +27,14 @@ function Marco() {
     );
   }
 
+  // Lógica de roles
+  const esAdmin = usuario.rol === 'Administrador';
+  const esSupervisor = usuario.rol === 'Supervisor';
+  // El Encargado no necesita variable especial, ya que solo ve el Panel
+  
+  // Definimos quién puede ver las pestañas avanzadas (Admin y Supervisor)
+  const puedeVerAvanzado = esAdmin || esSupervisor;
+
   return (
     <div className="marco">
       <header className="cabecera">
@@ -38,10 +46,16 @@ function Marco() {
           <NavLink to="/" end>
             Panel
           </NavLink>
-          <NavLink to="/historicos">Históricos</NavLink>
-          <NavLink to="/alertas">Alertas</NavLink>
-          <NavLink to="/sistemas">Sistemas</NavLink>
-          <NavLink to="/informe">Informe</NavLink>
+          
+          {/* 👇 Los Encargados NO ven estos enlaces */}
+          {puedeVerAvanzado && (
+            <>
+              <NavLink to="/historicos">Históricos</NavLink>
+              <NavLink to="/alertas">Alertas</NavLink>
+              <NavLink to="/sistemas">Sistemas</NavLink>
+              <NavLink to="/informe">Informe</NavLink>
+            </>
+          )}
         </nav>
         <div className="cabecera__sesion">
           <div>
@@ -56,14 +70,26 @@ function Marco() {
 
       <main className="contenido">
         <Routes>
+          {/* El Panel es visible para todos */}
           <Route path="/" element={<PaginaPanel />} />
-          <Route path="/historicos" element={<PaginaHistoricos />} />
-          {/* Desbloqueamos Alertas */}
-          <Route path="/alertas" element={<PaginaAlertas />} />
-          {/* Desbloqueamos Sistemas (si la pusiste con validación) */}
-          <Route path="/sistemas" element={<PaginaSistemas />} />
-          {/* Desbloqueamos Informe */}
-          <Route path="/informe" element={<PaginaInforme />} />
+          
+          {/* Rutas protegidas: si el Encargado escribe la URL, lo devuelve al Panel */}
+          <Route 
+            path="/historicos" 
+            element={puedeVerAvanzado ? <PaginaHistoricos /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/alertas" 
+            element={puedeVerAvanzado ? <PaginaAlertas /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/sistemas" 
+            element={puedeVerAvanzado ? <PaginaSistemas /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/informe" 
+            element={puedeVerAvanzado ? <PaginaInforme /> : <Navigate to="/" replace />} 
+          />
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -75,7 +101,6 @@ function Marco() {
     </div>
   );
 }
-
 
 export function App() {
   return (
