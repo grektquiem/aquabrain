@@ -42,8 +42,7 @@ export class MedicionesController {
     const csv = await this.mediciones.exportarCsv(consulta);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="mediciones.csv"');
-    // BOM para que Excel respete los acentos.
-    res.send('\uFEFF' + csv);
+    res.send(csv);
   }
 
   @Get('serie')

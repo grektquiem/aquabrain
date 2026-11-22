@@ -75,7 +75,10 @@ export function PaginaHistoricos() {
     const blob = await respuesta.blob();
     const enlace = document.createElement('a');
     enlace.href = URL.createObjectURL(blob);
-    enlace.download = `aquabrain-${serie?.sensor.codigo ?? 'serie'}-${bucket}.csv`;
+    const sensorCodigo = serie?.sensor.codigo ?? 'serie';
+    const rangoDesde = desde.slice(0, 10);   // "2026-11-15"
+    const rangoHasta = hasta.slice(0, 10);   // "2026-11-22"
+    enlace.download = `aquabrain-${sensorCodigo}-${rangoDesde}_${rangoHasta}.csv`;
     enlace.click();
     URL.revokeObjectURL(enlace.href);
   }
