@@ -77,7 +77,7 @@ El lote admite hasta **`MAX_BULK_ITEMS` = 500** elementos y responde **`207 Mult
 
 El paquete **`@aquabrain/shared`** define, con **Zod**, los esquemas de entrada (login, usuarios, sistemas, sensores, reglas y mediciones) y constantes como `MAX_BULK_ITEMS`. Lo consumen el **simulador** (valida antes de enviar) y la **API** (el tope del lote proviene de la constante compartida, y el propio DTO publica ese límite en OpenAPI).
 
-Para que la afirmación «una sola fuente de verdad» sea **verificable y no una promesa**, se añadió una prueba automática de contrato (`test/contrato.e2e-spec.ts`, TS-42) que compara el documento OpenAPI publicado con los esquemas compartidos: confirma que el `minLength` de la contraseña del login, el `minLength` del alta de usuario y el `maxItems` del lote **coinciden** con `loginSchema`, `usuarioCreateSchema` y `MAX_BULK_ITEMS`, y que el esquema compartido rechaza contraseñas demasiado cortas.
+Para que la afirmación «una sola fuente de verdad» sea **verificable y no una promesa**, se añadió una prueba automática de contrato (`test/contrato.e2e-spec.ts`, TS-42) que compara el documento OpenAPI publicado con los esquemas compartidos: confirma que el `minLength` de la contraseña del alta de usuario y el `maxItems` del lote **coinciden** con `usuarioCreateSchema` y `MAX_BULK_ITEMS`, que el esquema compartido rechaza contraseñas demasiado cortas en el alta, y que el login **no** publica la política de contraseñas (ni en OpenAPI ni en `loginSchema`), para no revelarla con respuestas distintas a «Credenciales inválidas».
 
 ## 3.7 Documentación OpenAPI
 
