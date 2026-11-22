@@ -23,7 +23,7 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Ip() ip: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const ua = req.headers['user-agent'];
     const sesion = await this.auth.login(dto.email, dto.password, ip, ua);
-    res.cookie(COOKIE_REFRESH, sesion.refreshToken, opcionesCookie());
+    res.cookie(COOKIE_REFRESH, sesion.refreshToken, opcionesCookie(sesion.refreshTtlSegundos * 1000));
     return sesion;
   }
 
@@ -42,7 +42,7 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token ausente');
     }
     const sesion = await this.auth.refresh(token, ip, req.headers['user-agent']);
-    res.cookie(COOKIE_REFRESH, sesion.refreshToken, opcionesCookie());
+    res.cookie(COOKIE_REFRESH, sesion.refreshToken, opcionesCookie(sesion.refreshTtlSegundos * 1000));
     return sesion;
   }
 
@@ -65,12 +65,14 @@ export class AuthController {
   }
 }
 
-function opcionesCookie() {
+function opcionesCookie(maxAgeMs: number) {
+  const enProduccion = process.env.NODE_ENV === 'production';
   return {
     httpOnly: true,
-    sameSite: 'strict' as const,
-    secure: process.env.NODE_ENV === 'production',
+    // Cross-site (Vercel → Render) exige 'none'. En local con localhost alcanza 'lax'.
+    sameSite: (enProduccion ? 'none' : 'lax') as 'none' | 'lax',
+    secure: enProduccion,
     path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: maxAgeMs,
   };
 }

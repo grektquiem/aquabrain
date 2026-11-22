@@ -5,6 +5,7 @@ import { PaginaPanel } from './paginas/Panel';
 import { PaginaHistoricos } from './paginas/Historicos';
 import { PaginaAlertas } from './paginas/Alertas';
 import { API_URL } from './api/cliente';
+import { BannerCookies } from './componentes/BannerCookies';
 
 /** Rutas y armazón del dashboard. La sesión vive en memoria y se recupera del refresco. */
 function Marco() {
@@ -72,6 +73,7 @@ function SinPermiso() {
 export function App() {
   return (
     <ProveedorSesion>
+      <BannerCookies />
       <Marco />
     </ProveedorSesion>
   );

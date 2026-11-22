@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({ example: 'admin@aqua.cl' })
@@ -12,4 +12,12 @@ export class LoginDto {
   @MinLength(10)
   @MaxLength(128)
   password!: string;
+
+  @ApiPropertyOptional({
+    description: 'Extiende la sesión a 30 días (checkbox "Recuérdame")',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }

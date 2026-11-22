@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { useSesion } from '../sesion/ContextoSesion';
 
-/**
- * Pantalla de acceso. Las cuentas de demostración están sembradas por
- * `prisma/seed.ts`; la contraseña se escribe siempre (nunca se precarga).
- */
+const KEY_RECORDAR = 'ab_recordar';
+const KEY_EMAIL = 'ab_email_recordado';
+
 export function PaginaLogin() {
   const { iniciar } = useSesion();
-  const [email, setEmail] = useState('admin@aqua.cl');
+  const [email, setEmail] = useState(() => localStorage.getItem(KEY_EMAIL) ?? 'admin@aqua.cl');
   const [password, setPassword] = useState('');
+  const [recordar, setRecordar] = useState(() => localStorage.getItem(KEY_RECORDAR) === '1');
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -17,7 +17,15 @@ export function PaginaLogin() {
     setError(null);
     setEnviando(true);
     try {
-      await iniciar(email.trim(), password);
+      await iniciar(email.trim(), password, recordar);
+
+      if (recordar) {
+        localStorage.setItem(KEY_RECORDAR, '1');
+        localStorage.setItem(KEY_EMAIL, email.trim());
+      } else {
+        localStorage.removeItem(KEY_RECORDAR);
+        localStorage.removeItem(KEY_EMAIL);
+      }
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : 'No fue posible iniciar sesión');
     } finally {
@@ -53,6 +61,15 @@ export function PaginaLogin() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+        </label>
+
+        <label className="campo campo--checkbox">
+          <input
+            type="checkbox"
+            checked={recordar}
+            onChange={(e) => setRecordar(e.target.checked)}
+          />
+          <span>Mantener sesión iniciada (30 días)</span>
         </label>
 
         {error && (

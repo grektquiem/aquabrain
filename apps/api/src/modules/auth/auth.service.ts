@@ -13,6 +13,7 @@ export interface SesionEmitida {
   accessToken: string;
   refreshToken: string;
   expiraEnSegundos: number;
+  refreshTtlSegundos: number;
   usuario: {
     id: string;
     nombre: string;
@@ -40,7 +41,7 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {}
 
-  async login(email: string, password: string, ip?: string, userAgent?: string): Promise<SesionEmitida> {
+  async login(email: string, password: string, ip?: string, userAgent?: string, rememberMe = false,): Promise<SesionEmitida> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { email: email.toLowerCase() },
       include: { rol: { include: { rolPermisos: { include: { permiso: true } } } } },
@@ -89,6 +90,7 @@ export class AuthService {
       },
       ip,
       userAgent,
+      rememberMe,
     );
   }
 
@@ -169,9 +171,17 @@ export class AuthService {
     }
   }
 
-  private async emitirSesion(usuario: SesionEmitida['usuario'], ip?: string, userAgent?: string): Promise<SesionEmitida> {
+    private async emitirSesion(
+    usuario: SesionEmitida['usuario'],
+    ip?: string,
+    userAgent?: string,
+    rememberMe = false,
+  ): Promise<SesionEmitida> {
     const accessTtl = this.config.get<string>('JWT_ACCESS_TTL', '15m');
-    const refreshTtl = this.config.get<string>('JWT_REFRESH_TTL', '7d');
+    // Si "Recuérdame" está marcado, la sesión se extiende a 30 días.
+    const refreshTtl = rememberMe
+      ? '30d'
+      : this.config.get<string>('JWT_REFRESH_TTL', '7d');
 
     const accessToken = await this.jwt.signAsync(
       { sub: usuario.id, email: usuario.email, rol: usuario.rol },
@@ -198,6 +208,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       expiraEnSegundos: Math.floor(parseDuracion(accessTtl) / 1000),
+      refreshTtlSegundos: Math.floor(parseDuracion(refreshTtl) / 1000),
       usuario,
     };
   }

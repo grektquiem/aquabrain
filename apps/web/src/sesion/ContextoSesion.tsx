@@ -5,7 +5,7 @@ import type { Sesion } from '../api/tipos';
 interface EstadoSesion {
   usuario: Sesion['usuario'] | null;
   cargando: boolean;
-  iniciar: (email: string, password: string) => Promise<void>;
+  iniciar: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   cerrar: () => Promise<void>;
   puede: (permiso: string) => boolean;
 }
@@ -38,10 +38,10 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const iniciar = useCallback(async (email: string, password: string) => {
+  const iniciar = useCallback(async (email: string, password: string, rememberMe = false) => {
     const sesion = await peticion<Sesion>('/auth/login', {
       method: 'POST',
-      cuerpo: { email, password },
+      cuerpo: { email, password, rememberMe },
       sinRefresco: true,
     });
     fijarToken(sesion.accessToken);
