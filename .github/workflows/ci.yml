@@ -104,6 +104,9 @@ jobs:
         run: npm ci
       - name: Generar cliente Prisma
         run: npx prisma generate
-        working-directory: apps/api  
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://u:p@localhost:5432/db
+          DIRECT_URL: postgresql://u:p@localhost:5432/db  
       - name: Verificar tipos y compilar
         run: npm run build
