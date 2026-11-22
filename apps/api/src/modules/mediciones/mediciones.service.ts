@@ -476,7 +476,7 @@ export class MedicionesService {
     });
 
     // BOM UTF-8: Excel lo necesita para detectar la codificación sin problemas.
-    return '\uFEFF' + [cabecera, ...lineas].join('\r\n');
+    return '\uFEFF' + 'sep=;\r\n' + [cabecera, ...lineas].join('\r\n');
   }
 
   /** Último valor conocido por sensor (`estado_sensor_actual`, I-12 · DN-05). */
