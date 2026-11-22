@@ -625,3 +625,33 @@ code {
   font-size: 14px;
   color: var(--gris-600);
 }
+
+
+/* Botón rojo para eliminar */
+.boton--peligro {
+  background-color: #ef4444;
+  color: white;
+}
+.boton--peligro:hover {
+  background-color: #dc2626;
+}
+
+/* Modal simple */
+.modal-fondo {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+}
+.modal-caja {
+  background: white; padding: 2rem; border-radius: 0.5rem;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+.modal-acciones {
+  display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;
+}
+.cabecera-seccion {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}

@@ -10,6 +10,7 @@
 export type Severidad = 'ALTA' | 'MEDIA' | 'BAJA' | 'INFO';
 export type EstadoAlerta = 'ACTIVA' | 'RESUELTA';
 export type Frescura = 'EN_LINEA' | 'SIN_COMUNICACION' | 'INACTIVO' | 'DESCONOCIDO';
+export type EstadoSistema = 'ACTIVO' | 'INACTIVO' | 'MANTENIMIENTO';
 
 export interface Sesion {
   accessToken: string;
@@ -123,4 +124,12 @@ export interface ErrorApi {
   detalles?: unknown;
   ruta?: string;
   timestamp?: string;
+}
+
+export interface Sistema {
+  id: string;
+  nombre: string;
+  ubicacion: string | null;
+  estado: EstadoSistema;
+  creadoEn: string;
 }
