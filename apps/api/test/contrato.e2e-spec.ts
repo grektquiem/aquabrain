@@ -46,11 +46,10 @@ describe('Contrato OpenAPI ↔ @aquabrain/shared (TS-42)', () => {
     expect(MAX_BULK_ITEMS).toBe(500);
   });
 
-  it('la política de contraseña del login coincide en OpenAPI y shared', () => {
-    const publicado = doc.components.schemas.LoginDto.properties?.password.minLength;
-    const compartido = loginSchema.shape.password.minLength;
-    expect(publicado).toBe(compartido);
-    expect(compartido).toBe(10);
+  it('el login no publica la política de contraseña, ni en OpenAPI ni en shared', () => {
+    // Revelarla daría respuestas distintas a "Credenciales inválidas".
+    expect(doc.components.schemas.LoginDto.properties?.password.minLength).toBeUndefined();
+    expect(loginSchema.shape.password.minLength).toBeNull();
   });
 
   it('el alta de usuario publica `rolId` y la misma política de contraseña', () => {
@@ -61,8 +60,10 @@ describe('Contrato OpenAPI ↔ @aquabrain/shared (TS-42)', () => {
     expect(propiedades?.password.minLength).toBe(usuarioCreateSchema.shape.password.minLength);
   });
 
-  it('el esquema compartido es el que decide: rechaza contraseñas cortas', () => {
-    expect(loginSchema.safeParse({ email: 'a@b.cl', password: '123456789' }).success).toBe(false);
-    expect(loginSchema.safeParse({ email: 'a@b.cl', password: '1234567890' }).success).toBe(true);
+  it('el esquema compartido es el que decide: el alta rechaza contraseñas cortas', () => {
+    const politica = usuarioCreateSchema.shape.password;
+    expect(politica.minLength).toBe(10);
+    expect(politica.safeParse('123456789').success).toBe(false);
+    expect(politica.safeParse('1234567890').success).toBe(true);
   });
 });

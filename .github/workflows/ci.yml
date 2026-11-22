@@ -42,7 +42,8 @@ jobs:
       JWT_REFRESH_SECRET: ci_refresh_secret_para_pruebas_con_mas_de_32_bytes
       JWT_ACCESS_TTL: 15m
       JWT_REFRESH_TTL: 7d
-      BCRYPT_COST: '4'
+      # Mínimo que admite env.validation.ts (10); es el más rápido para las pruebas.
+      BCRYPT_COST: '10'
       DEVICE_KEY_PEPPER: ci_pepper_para_pruebas_con_mas_de_32_bytes_ok
       ALERT_SILENCE_FACTOR: '3'
       MAX_TIMESTAMP_SKEW: 5m

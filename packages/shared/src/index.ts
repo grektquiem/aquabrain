@@ -17,10 +17,13 @@ export const MAX_BULK_ITEMS = 500;
 export const uuid = z.string().uuid();
 export const iso = z.string().datetime({ offset: true });
 
+// El login no valida formato ni longitud a propósito: esos errores revelarían
+// la política de contraseñas y responderían distinto a "Credenciales inválidas".
+// La política (doc 06 §2.1, mínimo 10 caracteres) se aplica en el alta y el
+// cambio de contraseña (`usuarioCreateSchema`).
 export const loginSchema = z.object({
-  email: z.string().email().max(180),
-  // Política de contraseña (doc 06 §2.1): mínimo 10 caracteres.
-  password: z.string().min(10).max(128),
+  email: z.string(),
+  password: z.string(),
 });
 
 export const refreshSchema = z.object({

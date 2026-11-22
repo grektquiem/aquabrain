@@ -99,11 +99,14 @@ describe('Históricos y exportación (e2e)', () => {
       // BOM UTF-8 para que Excel respete los acentos.
       expect(res.text.startsWith('\uFEFF')).toBe(true);
       const lineas = res.text.replace(/^\uFEFF/, '').split('\r\n').filter(Boolean);
-      expect(lineas[0]).toBe('sensor;timestamp;valor;unidad;origen;calidad');
-      expect(lineas).toHaveLength(2);
-      expect(lineas[1]).toContain('TEMP-01;');
-      expect(lineas[1]).toContain('21.5');
-      expect(lineas[1]).toContain('OFFLINE');
+      // Directiva de Excel para usar `;` como separador, antes de la cabecera.
+      expect(lineas[0]).toBe('sep=;');
+      expect(lineas[1]).toBe('Sensor;Fecha y hora;Valor;Unidad;Origen;Calidad');
+      expect(lineas).toHaveLength(3);
+      expect(lineas[2]).toContain('TEMP-01;');
+      // Coma decimal y dos decimales, como espera Excel en español.
+      expect(lineas[2]).toContain(';21,50;');
+      expect(lineas[2]).toContain('OFFLINE');
     } finally {
       await t.limpiar();
     }
