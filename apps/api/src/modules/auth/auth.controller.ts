@@ -22,7 +22,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Inicia sesión y emite el par de tokens' })
   async login(@Body() dto: LoginDto, @Ip() ip: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const ua = req.headers['user-agent'];
-    const sesion = await this.auth.login(dto.email, dto.password, ip, ua);
+    const sesion = await this.auth.login(dto.email, dto.password, ip, ua, dto.rememberMe);
     res.cookie(COOKIE_REFRESH, sesion.refreshToken, opcionesCookie(sesion.refreshTtlSegundos * 1000));
     return sesion;
   }

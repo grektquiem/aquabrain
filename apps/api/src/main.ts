@@ -18,6 +18,9 @@ async function bootstrap(): Promise<void> {
   const config = app.get(ConfigService);
   const logger = new Logger('Arranque');
 
+  // La API corre detrás del proxy de Render: confiar en un salto para obtener la IP real.
+  app.set('trust proxy', 1);
+
   // Endurecimiento HTTP compartido con las pruebas de integración (TS-23).
   aplicarEndurecimiento(app, config);
 
