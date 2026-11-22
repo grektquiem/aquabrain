@@ -125,7 +125,7 @@ export function PaginaSistemas() {
       <header className="cabecera-seccion" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 className="seccion__titulo">Gestión de Sistemas</h2>
         
-        {/* 👇 Solo el Administrador ve el botón de Crear */}
+        {/* Solo el Administrador ve el botón de Crear */}
         {esAdmin && (
           <button className="boton boton--primario" onClick={abrirCrear}>
             + Nuevo Sistema
@@ -159,7 +159,7 @@ export function PaginaSistemas() {
                   </span>
                 </td>
                 <td>
-                  {/* 👇 Solo el Administrador ve los botones de Editar y Eliminar */}
+                  {/* Solo el Administrador ve los botones de Editar y Eliminar */}
                   {esAdmin ? (
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="boton boton--secundario" onClick={() => abrirEditar(sis)}>Editar</button>

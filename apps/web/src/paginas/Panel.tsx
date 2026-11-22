@@ -102,7 +102,7 @@ export function PaginaPanel() {
       <section>
         <h2 className="seccion__titulo">Alertas activas por severidad</h2>
         {data.alertasActivas.length === 0 ? (
-          <p className="vacio">Sin alertas activas. 🎉</p>
+          <p className="vacio">Sin alertas activas.</p>
         ) : (
           <ul className="lista-severidad">
             {data.alertasActivas.map((a) => (

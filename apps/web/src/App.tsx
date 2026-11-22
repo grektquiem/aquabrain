@@ -4,7 +4,6 @@ import { PaginaLogin } from './paginas/Login';
 import { PaginaPanel } from './paginas/Panel';
 import { PaginaHistoricos } from './paginas/Historicos';
 import { PaginaAlertas } from './paginas/Alertas';
-import { API_URL } from './api/cliente';
 import { BannerCookies } from './componentes/BannerCookies';
 import { PaginaSistemas } from './paginas/Sistemas';
 import { PaginaInforme } from './paginas/Informe';
@@ -47,7 +46,7 @@ function Marco() {
             Panel
           </NavLink>
           
-          {/* 👇 Los Encargados NO ven estos enlaces */}
+          {/* Los Encargados NO ven estos enlaces */}
           {puedeVerAvanzado && (
             <>
               <NavLink to="/historicos">Históricos</NavLink>
@@ -96,7 +95,7 @@ function Marco() {
       </main>
 
       <footer className="pie">
-        AquaPlants / AquaBrain · Unidad 4 (ES4) · panel conectado a <code>{API_URL}</code>
+        AquaPlants / AquaBrain
       </footer>
     </div>
   );

@@ -14,7 +14,7 @@ npm run dev:web
 
 Usuarios demo (contraseña AquaPlants2026!):
   admin@aqua.cl  (Administrador Aqua)
-  supervisor@aqua.cl  (Supervisora Aqua)
+  supervisor@aqua.cl  (Supervisor Aqua)
   encargado@aqua.cl  (Encargado Aqua)
 
 

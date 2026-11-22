@@ -130,7 +130,7 @@ async function main() {
   const passwordHash = await bcrypt.hash(PASSWORD, BCRYPT_COST);
   const usuarios = [
     { nombre: 'Administrador Aqua', email: 'admin@aqua.cl', rolId: roles.admin.id },
-    { nombre: 'Supervisora Aqua', email: 'supervisor@aqua.cl', rolId: roles.supervisor.id },
+    { nombre: 'Supervisor Aqua', email: 'supervisor@aqua.cl', rolId: roles.supervisor.id },
     { nombre: 'Encargado Aqua', email: 'encargado@aqua.cl', rolId: roles.encargado.id },
   ];
   for (const u of usuarios) {

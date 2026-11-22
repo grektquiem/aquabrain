@@ -19,7 +19,7 @@ export function BannerCookies() {
   return (
     <div className="banner-cookies" role="dialog" aria-label="Consentimiento de cookies">
       <div className="banner-cookies__texto">
-        <strong>🍪 Cookies en AquaBrain</strong>
+        <strong>Cookies en AquaBrain</strong>
         <p>
           Usamos una cookie técnica (<code>ab_refresh</code>) para mantener tu sesión iniciada.
           No usamos cookies de seguimiento ni publicidad.
