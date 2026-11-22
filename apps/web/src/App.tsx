@@ -6,6 +6,7 @@ import { PaginaHistoricos } from './paginas/Historicos';
 import { PaginaAlertas } from './paginas/Alertas';
 import { API_URL } from './api/cliente';
 import { BannerCookies } from './componentes/BannerCookies';
+import { PaginaSistemas } from './paginas/Sistemas';
 
 /** Rutas y armazón del dashboard. La sesión vive en memoria y se recupera del refresco. */
 function Marco() {
@@ -38,6 +39,7 @@ function Marco() {
           </NavLink>
           <NavLink to="/historicos">Históricos</NavLink>
           <NavLink to="/alertas">Alertas</NavLink>
+          <NavLink to="/sistemas">Sistemas</NavLink>
         </nav>
         <div className="cabecera__sesion">
           <div>
@@ -56,6 +58,8 @@ function Marco() {
           <Route path="/historicos" element={<PaginaHistoricos />} />
           <Route path="/alertas" element={puede('alerta:leer') ? <PaginaAlertas /> : <SinPermiso />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/sistemas" element={puede('sistema:leer') ? <PaginaSistemas /> : <SinPermiso />} 
+/>
         </Routes>
       </main>
 
