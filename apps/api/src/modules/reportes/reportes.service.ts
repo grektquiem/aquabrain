@@ -20,10 +20,18 @@ export class ReportesService {
       this.prisma.dispositivo.count({ where: { estadoConexion: 'EN_LINEA' } }),
       this.prisma.alerta.count({ where: { estado: 'ACTIVA' } }),
       this.prisma.medicion.count(),
+      // Solo los campos que muestra el Informe. No se usa `include` porque traería
+      // `medicionId` (BigInt), que JSON no sabe serializar y rompe la respuesta.
       this.prisma.alerta.findMany({
         take: 5,
         orderBy: { creadaEn: 'desc' },
-        include: { sensor: { select: { codigo: true } } }
+        select: {
+          id: true,
+          creadaEn: true,
+          severidad: true,
+          mensaje: true,
+          sensor: { select: { codigo: true } },
+        },
       })
     ]);
 
