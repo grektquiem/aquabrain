@@ -35,9 +35,12 @@ describe('Históricos y exportación (e2e)', () => {
     const t = await crearTenant(app, 'ts38', ['TEMP-01']);
     try {
       const sensorId = t.sensorIds['TEMP-01'];
-      // Tres lecturas dentro de la misma hora en curso y una en la hora previa.
+      // Tres lecturas dentro de la hora anterior (ya transcurrida) y una en la
+      // hora previa a esa. Se usa la hora anterior y no la actual porque, si la
+      // prueba corre en los primeros minutos de una hora, las lecturas de
+      // :01–:03 quedarían en el futuro y fuera del rango consultado.
       const ahora = Date.now();
-      const inicio = new Date(ahora).setMinutes(0, 0, 0);
+      const inicio = new Date(ahora - 60 * 60_000).setMinutes(0, 0, 0);
       const valores = [
         { t: new Date(inicio + 60_000), v: 20 },
         { t: new Date(inicio + 120_000), v: 30 },
