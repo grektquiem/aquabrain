@@ -29,10 +29,13 @@ function Marco() {
   // Lógica de roles
   const esAdmin = usuario.rol === 'Administrador';
   const esSupervisor = usuario.rol === 'Supervisor';
-  // El Encargado no necesita variable especial, ya que solo ve el Panel
-  
-  // Definimos quién puede ver las pestañas avanzadas (Admin y Supervisor)
+
+  // Históricos, Sistemas e Informe: solo Administrador y Supervisor.
   const puedeVerAvanzado = esAdmin || esSupervisor;
+
+  // Alertas: quien tenga el permiso de la API (también el Encargado, que debe
+  // verlas y resolverlas en terreno).
+  const puedeVerAlertas = usuario.permisos.includes('alerta:leer');
 
   return (
     <div className="marco">
@@ -48,11 +51,11 @@ function Marco() {
             Panel
           </NavLink>
           
+          {puedeVerAvanzado && <NavLink to="/historicos">Históricos</NavLink>}
+          {puedeVerAlertas && <NavLink to="/alertas">Alertas</NavLink>}
           {/* Los Encargados NO ven estos enlaces */}
           {puedeVerAvanzado && (
             <>
-              <NavLink to="/historicos">Históricos</NavLink>
-              <NavLink to="/alertas">Alertas</NavLink>
               <NavLink to="/sistemas">Sistemas</NavLink>
               <NavLink to="/informe">Informe</NavLink>
             </>
@@ -81,7 +84,7 @@ function Marco() {
           />
           <Route 
             path="/alertas" 
-            element={puedeVerAvanzado ? <PaginaAlertas /> : <Navigate to="/" replace />} 
+            element={puedeVerAlertas ? <PaginaAlertas /> : <Navigate to="/" replace />}
           />
           <Route 
             path="/sistemas" 
